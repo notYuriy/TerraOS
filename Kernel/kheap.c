@@ -1,6 +1,7 @@
 #include <kheap.h>
 #include <video.h>
 #include <spinlock.h>
+#include <ksbrk.h>
 
 kheap_object_header_t literal_head;
 kheap_object_header_t* head;
@@ -125,8 +126,17 @@ void kheap_init(phmeminfo_t info){
     kheap_spinlock = 0;
 }
 
-void* kheap_malloc(size_t size){
-    spinlock_lock(&kheap_spinlock);
+void* kheap_sbrk_malloc(uint64_t size){
+    //calculating allocation size
+    uint64_t real_size = size + sizeof(kheap_object_header_t);
+    //requesting ksbrk
+    void* allocated = ksbrk(real_size);
+    kheap_object_header_t* allocated_header = allocated;
+    allocated_header->size = size;
+    return kheap_get_data(allocated_header);
+}
+
+void* kheap_search_free_blocks(size_t size){
     kheap_object_header_t* prev = head;
     size_t split_size = size + sizeof(kheap_object_header_t);
     while(prev->next != NULL)
@@ -153,8 +163,19 @@ void* kheap_malloc(size_t size){
         }
         prev = prev->next;
     }
-    spinlock_unlock(&kheap_spinlock);
     return NULL;
+}
+
+void* kheap_malloc(size_t size){
+    spinlock_lock(&kheap_spinlock);
+    void* result = kheap_search_free_blocks(size);
+    if(result == NULL){
+        result = kheap_sbrk_malloc(size);
+        spinlock_unlock(&kheap_spinlock);
+        return result;
+    }
+    spinlock_unlock(&kheap_spinlock);
+    return result;
 }
 
 void kheap_free(void* addr){
@@ -165,8 +186,7 @@ void kheap_free(void* addr){
     spinlock_unlock(&kheap_spinlock);
 }
 
-void* kheap_malloc_aligned(size_t size, size_t align){
-    spinlock_lock(&kheap_spinlock);
+void* kheap_search_aligned_free_blocks(size_t size, size_t align){
     kheap_object_header_t* prev = head;
     size_t alloc_size = size;
     while(prev->next != NULL)
@@ -194,7 +214,6 @@ void* kheap_malloc_aligned(size_t size, size_t align){
                 cur->next = after;
                 after->size = space_after_pages - sizeof(kheap_object_header_t);
             }
-            spinlock_unlock(&kheap_spinlock);
             return kheap_get_data(cur);
         }
         if(space_before_align >= sizeof(kheap_object_header_t))
@@ -211,7 +230,6 @@ void* kheap_malloc_aligned(size_t size, size_t align){
                 cur->next = after;
                 after->size = space_after_pages - sizeof(kheap_object_header_t);
             }
-            spinlock_unlock(&kheap_spinlock);
             return kheap_get_data(allocated);
         }
         uint64_t new_pages_base = pages_base + align;
@@ -231,15 +249,37 @@ void* kheap_malloc_aligned(size_t size, size_t align){
                 cur->next = after;
                 after->size = new_space_after_pages - sizeof(kheap_object_header_t);
             }
-            spinlock_unlock(&kheap_spinlock);
             return kheap_get_data(allocated);
         }
         //leaking memory is not acceptable, so we move to next variant
         prev = prev->next;
     }
-    panic("Kernel Heap: Can not allocate pages");
-    spinlock_unlock(&kheap_spinlock);
     return NULL;
+}
+
+void* kheap_malloc_aligned(size_t size, size_t align){
+    spinlock_lock(&kheap_spinlock);
+    void* result = kheap_search_aligned_free_blocks(size, align);
+    if(result == NULL){
+        uint64_t kernel_end = (uint64_t)ksbrk(0);
+        uint64_t after_header = kernel_end + sizeof(kheap_object_header_t);
+        uint64_t payload_start = up_align(after_header, align);
+        while(payload_start - after_header < sizeof(kheap_object_header_t)){
+            payload_start += align;
+        }
+        uint64_t first_header_addr = kernel_end;
+        uint64_t second_header_addr = payload_start - sizeof(kheap_object_header_t);
+        ksbrk(payload_start + size - kernel_end);
+        kheap_object_header_t* first_header = (kheap_object_header_t*)first_header_addr;
+        kheap_object_header_t* second_header = (kheap_object_header_t*)second_header_addr;
+        first_header->size = (uint64_t)second_header - (uint64_t)kheap_get_data(first_header);
+        first_header->next = head->next;
+        head->next = first_header;
+        spinlock_unlock(&kheap_spinlock);
+        return kheap_get_data(second_header);
+    }
+    spinlock_unlock(&kheap_spinlock);
+    return result;   
 }
 
 void kheap_traverse(void){

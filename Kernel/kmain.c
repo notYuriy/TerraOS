@@ -118,7 +118,13 @@ void kmain(uint64_t physinfo){
     printf("[Kernel Init] Path splitter status: Standing by\n");
     idt_init();
     printf("[Kernel Init] IDT status: Standing by\n");
+    ksbrk_init();
+    printf("[Kernel Init] Ksbrk standing by\n");
     extern void asmutils_div_by_zero();
     asmutils_div_by_zero();
     printf("It didn't crash!\n");
+    void* result = kheap_malloc(128 MB);
+    printf("Result: %p\n", result);
+    result = kheap_malloc_aligned(256 MB, 256 MB);
+    printf("Result: %p\n", result);
 }
