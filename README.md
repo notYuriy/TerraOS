@@ -3,7 +3,7 @@ Experimental 64 bit operating system.
 
 Printf is used from https://github.com/mpaland/printf
 Great osdev tutorials: https://os.phil-opp.com/first-edition/
-(first edition is lest dependent on Rust)
+(first edition is less dependent on Rust)
 
 Goals
 Completed:
