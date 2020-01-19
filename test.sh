@@ -1,0 +1,1 @@
+qemu-system-x86_64 -cdrom Iso/TerraOS.iso -m 4G -no-reboot -monitor stdio
