@@ -15,10 +15,10 @@ Completed:
 * Kernel sbrk
 * Interrupts
 * Spinlocks for thread-safety
-
-Not completed:
 * PIC
 * Timer support
+
+Not completed:
 * Keyboard support
 * Threading
 * Userspace
