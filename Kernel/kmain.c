@@ -1,13 +1,15 @@
-#include "video.h"
-#include "utils.h"
-#include "multiboot2.h"
-#include "phmmngr.h"
-#include "vmcore.h"
-#include "kheap.h"
-#include "pathsplit.h"
-#include "idt.h"
-#include "spinlock.h"
-#include "ksbrk.h"
+#include <video.h>
+#include <utils.h>
+#include <multiboot2.h>
+#include <phmmngr.h>
+#include <vmcore.h>
+#include <kheap.h>
+#include <pathsplit.h>
+#include <idt.h>
+#include <spinlock.h>
+#include <ksbrk.h>
+#include <timer.h>
+#include <portio.h>
 
 void kmain(uint64_t physinfo){
     video_init();
@@ -120,11 +122,6 @@ void kmain(uint64_t physinfo){
     printf("[Kernel Init] IDT status: Standing by\n");
     ksbrk_init();
     printf("[Kernel Init] Ksbrk standing by\n");
-    extern void asmutils_div_by_zero();
-    asmutils_div_by_zero();
-    printf("It didn't crash!\n");
-    void* result = kheap_malloc(128 MB);
-    printf("Result: %p\n", result);
-    result = kheap_malloc_aligned(256 MB, 256 MB);
-    printf("Result: %p\n", result);
+    printf("=(\n");
+    timer_init(1000);
 }

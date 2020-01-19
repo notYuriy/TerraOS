@@ -18,8 +18,4 @@ asmutils_load_idt:
         lidt [rdi]
         ret
 
-asmutils_div_by_zero:
-        int 35
-        ret
-
 

@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "New": "plaintext",
+        "timer.h": "c",
+        "multiboot2.h": "c"
+    }
+}
