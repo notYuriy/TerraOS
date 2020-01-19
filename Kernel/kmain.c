@@ -12,6 +12,10 @@
 #include <pic.h>
 #include <timer.h>
 
+void test_callback(){
+    printf("ok, i am testing callback\n");
+}
+
 void kmain(uint64_t physinfo){
     video_init();
     printf("[Kernel Init] Kernel identity paging initialized\n");
@@ -112,6 +116,7 @@ void kmain(uint64_t physinfo){
     pic_init();
     printf("[Kernel Init] PIC initialized\n");
     timer_init(20);
-    asm("sti");
+    timer_set_callback(test_callback);
+    timer_enable();
     while(1);
 }

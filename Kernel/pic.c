@@ -50,9 +50,10 @@ void pic_init(void){
 	outb(PIC2_DATA, a2);
     outb(PIC1_DATA, 0xff);
 	outb(PIC2_DATA, 0xff);
+    asm("sti");
 }
 
-void pic_update(){
+inline void pic_update(){
     outb(PIC1_DATA, pic_master_mask);
     outb(PIC2_DATA, pic_slave_mask);
 }
