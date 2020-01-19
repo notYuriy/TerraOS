@@ -1,8 +1,8 @@
 # TerraOS
 Experimental 64 bit operating system.
 
-Printf is used from https://github.com/mpaland/printf
-Based on these great osdev tutorials: https://os.phil-opp.com/first-edition/
+Printf is used from https://github.com/mpaland/printf. 
+Based on these great osdev tutorials: https://os.phil-opp.com/first-edition/ 
 (first edition is less dependent on Rust)
 
 Goals
