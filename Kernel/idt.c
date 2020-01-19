@@ -1,5 +1,6 @@
 #include <idt.h>
 #include <video.h>
+#include <portio.h>
 
 typedef struct idt_entry_struct {
     uint16_t addr_low;
@@ -374,12 +375,26 @@ void idt_init(void){
     {
         idt_set_handler(i, idt_default_handler);
     }
+    //remapping irq
+    //source: http://www.jamesmolloy.co.uk/tutorial_html/5.-IRQs%20and%20the%20PIT.html
+    outb(0x20, 0x11);
+	outb(0xA0, 0x11);
+	outb(0x21, 0x20);
+	outb(0xA1, 0x28);
+	outb(0x21, 0x04);
+	outb(0xA1, 0x02);
+	outb(0x21, 0x01);
+	outb(0xA1, 0x01);
+	outb(0x21, 0x00);
+	outb(0xA1, 0x00);
 }
 
 void idt_dispatcher(idt_stack_frame_t* frame){
-    if(handlers[frame->intno] == NULL)
-    {
-        panic("Unhandled interrupt");
+    if(frame->intno > 32){
+        if(frame->intno > 40){
+            outb(0xa0, 0x20);
+        }
+        outb(0x20, 0x20);
     }
     handlers[frame->intno](frame);
 }
