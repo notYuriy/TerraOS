@@ -2,6 +2,7 @@
 #include <video.h>
 #include <portio.h>
 
+
 typedef struct idt_entry_struct {
     uint16_t addr_low;
     uint16_t selector;
@@ -379,6 +380,10 @@ void idt_init(void){
 
 void idt_dispatcher(idt_stack_frame_t* frame){
     handlers[frame->intno](frame);
+    if(frame->intno > 40){
+        outb(0xA0, 0x20);
+    }
+    outb(0x20, 0x20);
 }
 
 void idt_set_handler(idt_index_t index, idt_handler_t handler){

@@ -8,8 +8,9 @@
 #include <idt.h>
 #include <spinlock.h>
 #include <ksbrk.h>
-#include <timer.h>
 #include <portio.h>
+#include <pic.h>
+#include <timer.h>
 
 void kmain(uint64_t physinfo){
     video_init();
@@ -32,9 +33,6 @@ void kmain(uint64_t physinfo){
     uint64_t ramdisk_end = 0;
     uint32_t memory_map_entries_count = 0;
     boot_memory_map_entry_t* entries = NULL;
-    uint64_t old_rsdp_address = 0;
-    uint64_t new_rsdp_address = 0;
-    bool is_new_rsdp = false;
     while(!boot_is_terminator(tag))
     {
         if(tag->type == boot_memory_map_tag_id)
@@ -75,17 +73,6 @@ void kmain(uint64_t physinfo){
             ramdisk_begin = boot_get_module_physical_base(tag);
             ramdisk_end = boot_get_module_physical_limit(tag);
         }
-        if(tag->type == boot_acpi_old_rsdp_table)
-        {
-            old_rsdp_address = (uint64_t)(tag + 1);
-            printf("Old rsdp address: %llp\n", old_rsdp_address);
-        }
-        if(tag->type == boot_acpi_new_rsdp_table)
-        {
-            new_rsdp_address = (uint64_t)(tag + 1);
-            is_new_rsdp = true;
-            printf("New rsdp address: %llp\n", new_rsdp_address);
-        }
         tag = boot_go_to_next_entry(tag);
     }
     kernel_begin = down_align(kernel_begin, 4096);
@@ -122,6 +109,9 @@ void kmain(uint64_t physinfo){
     printf("[Kernel Init] IDT status: Standing by\n");
     ksbrk_init();
     printf("[Kernel Init] Ksbrk standing by\n");
-    printf("=(\n");
-    timer_init(1000);
+    pic_init();
+    printf("[Kernel Init] PIC initialized\n");
+    timer_init(20);
+    asm("sti");
+    while(1);
 }
