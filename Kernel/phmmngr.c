@@ -51,7 +51,7 @@ void phmmngr_init(phmeminfo_t _info){
     phmmngr_upper_bound = 0ULL;
     for(uint32_t i = 0ULL; i < info.mmap_entries_count; ++i)
     {
-        if(info.mmap_entries[i].type != boot_memory_map_avalible_map_id)
+        if(info.mmap_entries[i].type != BOOT_MEMORY_MAP_AVAILABLE)
         {
             continue;
         }
@@ -73,7 +73,7 @@ void phmmngr_init(phmeminfo_t _info){
     phmmngr_claim_bits(phmmngr_upper_bound, phmmngr_search_bound);
     for(uint32_t i = 0ULL; i < info.mmap_entries_count; ++i)
     {
-        if(info.mmap_entries[i].type == boot_memory_map_avalible_map_id)
+        if(info.mmap_entries[i].type == BOOT_MEMORY_MAP_AVAILABLE)
         {
             continue;
         }

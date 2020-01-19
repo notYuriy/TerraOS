@@ -23,7 +23,7 @@ void kheap_init(phmeminfo_t info){
     {
         boot_memory_map_entry_t* entry = info.mmap_entries + i;
         //memory is used by hardware should not be used for kernel heap
-        if(entry->type != boot_memory_map_avalible_map_id)
+        if(entry->type != BOOT_MEMORY_MAP_AVAILABLE)
         {
             continue;
         }

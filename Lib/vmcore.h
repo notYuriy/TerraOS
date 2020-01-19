@@ -4,20 +4,20 @@
 #include <utils.h>
 #include <phmmngr.h>
 
-#define vmcore_flags_mask (uint64_t)((1<<12)-1)
-#define vmcore_present_flag (uint64_t)(1ULL<<0ULL)
-#define vmcore_writable_flag (uint64_t)(1ULL<<1ULL)
-#define vmcore_user_accessible_flag (uint64_t)(1ULL<<2ULL)
-#define vmcore_write_through_caching_flag (uint64_t)(1ULL<<3ULL)
-#define vmcore_disable_cache_flag (uint64_t)(1ULL<<4ULL)
-#define vmcore_accessed_flag (uint64_t)(1ULL<<5ULL)
-#define vmcore_dirty_flag (uint64_t)(1ULL<<6ULL)
-#define vmcore_huge_page_flag (uint64_t)(1ULL<<7ULL)
-#define vmcore_global_flag (uint64_t)(1ULL<<8ULL)
-#define vmcore_no_execute_flag (uint64_t)(1ULL<<63ULL)
-#define vmcore_kernel_flags vmcore_present_flag | \
-                                vmcore_writable_flag | \
-                                vmcore_user_accessible_flag
+#define VMCORE_FLAGS_MASK (uint64_t)((1<<12)-1)
+#define VMCORE_PRESENT_FLAG (uint64_t)(1ULL<<0ULL)
+#define VMCORE_WRITABLE_FLAG (uint64_t)(1ULL<<1ULL)
+#define VMCORE_USER_ACCESSIBLE_FLAG (uint64_t)(1ULL<<2ULL)
+#define VMCORE_WRITE_THROUGH_CACHING_FLAG (uint64_t)(1ULL<<3ULL)
+#define VMCORE_DISABLE_CACHE_FLAG (uint64_t)(1ULL<<4ULL)
+#define VMCORE_ACCESSED_FLAG (uint64_t)(1ULL<<5ULL)
+#define VMCORE_DIRTY_FLAG (uint64_t)(1ULL<<6ULL)
+#define VMCORE_HUGE_PAGE_FLAG (uint64_t)(1ULL<<7ULL)
+#define VMCORE_GLOBAL_FLAG (uint64_t)(1ULL<<8ULL)
+#define VMCORE_NO_EXECUTE_FLAG (uint64_t)(1ULL<<63ULL)
+#define VMCORE_KERNEL_FLAGS VMCORE_PRESENT_FLAG | \
+                                VMCORE_WRITABLE_FLAG | \
+                                VMCORE_USER_ACCESSIBLE_FLAG
 
 typedef uint64_t vaddr_t;
 typedef uint64_t ventry_t;

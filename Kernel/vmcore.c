@@ -8,8 +8,8 @@ vaddr_t vmcore_walk_to_next_table(vaddr_t current, vindex_t index){
 vaddr_t vmcore_walk_to_next_table_alloc(vaddr_t current, vindex_t index){
     uint64_t addr = current + 8ULL * index;
     uint64_t* ref = (uint64_t*)addr;
-    if(!(*ref & vmcore_present_flag)){
-        *ref = phmmngr_new_frame() | vmcore_kernel_flags;
+    if(!(*ref & VMCORE_PRESENT_FLAG)){
+        *ref = phmmngr_new_frame() | VMCORE_KERNEL_FLAGS;
     }
     return (current << 9ULL) | ((uint64_t)index << 12ULL);
 }
@@ -64,7 +64,7 @@ void vmcore_map_at(vaddr_t addr, physaddr_t physaddr){
     ref = vmcore_walk_to_next_table_alloc(ref, vmcore_p3_index(addr));
     ref = vmcore_walk_to_next_table_alloc(ref, vmcore_p2_index(addr));
     ref += 8 * vmcore_p1_index(addr);
-    *(uint64_t*)ref = physaddr | vmcore_kernel_flags;
+    *(uint64_t*)ref = physaddr | VMCORE_KERNEL_FLAGS;
     asmutils_invalidate_cache(addr);
 }
 

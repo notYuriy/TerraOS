@@ -39,12 +39,12 @@ void kmain(uint64_t physinfo){
     boot_memory_map_entry_t* entries = NULL;
     while(!boot_is_terminator(tag))
     {
-        if(tag->type == boot_memory_map_tag_id)
+        if(tag->type == BOOT_MEMORY_MAP_TAG_ID)
         {
             memory_map_entries_count = boot_get_memory_map_entries_count(tag);
             entries = boot_get_memory_map_entries(tag);
         }
-        if(tag->type == boot_elf_sections_tag_id)
+        if(tag->type == BOOT_ELF_SECTIONS_TAG_ID)
         {
             uint32_t sectionCount = boot_get_section_headers_count(tag);
             boot_elf_section_header_t* headers = boot_get_section_headers(tag);
@@ -72,7 +72,7 @@ void kmain(uint64_t physinfo){
                 }
             }
         }
-        if(tag->type == boot_module_tag_id)
+        if(tag->type == BOOT_MODULE_TAG_ID)
         {
             ramdisk_begin = boot_get_module_physical_base(tag);
             ramdisk_end = boot_get_module_physical_limit(tag);

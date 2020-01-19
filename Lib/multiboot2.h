@@ -6,12 +6,12 @@
 
 //structure layouts taken from https://www.gnu.org/software/grub/manual/multiboot2/multiboot.html
 
-#define boot_memory_map_tag_id 6
-#define boot_elf_sections_tag_id 9
-#define boot_module_tag_id 3
-#define boot_memory_map_avalible_map_id 1
-#define boot_acpi_old_rsdp_table 14
-#define boot_acpi_new_rsdp_table 15
+#define BOOT_MEMORY_MAP_TAG_ID 6
+#define BOOT_ELF_SECTIONS_TAG_ID 9
+#define BOOT_MODULE_TAG_ID 3
+#define BOOT_MEMORY_MAP_AVAILABLE 1
+#define BOOT_ACPI_OLD_RSDP_TABLE 14
+#define BOOT_ACPI_NEW_RSDP_TABLE 15
 
 typedef struct boot_info_struct {
     uint32_t total_size;
