@@ -18,4 +18,24 @@ asmutils_load_idt:
         lidt [rdi]
         ret
 
+asmutils_store_ext_regs:
+        push rdx
+        push rax
+        mov rdx, 0xFFFFFFFFFFFFFFFF
+        mov rax, 0xFFFFFFFFFFFFFFFF
+        fxsave [rdi]
+        pop rax
+        pop rdx
+        ret
+
+asmutils_load_ext_regs:
+        push rdx
+        push rax
+        mov rdx, 0xFFFFFFFFFFFFFFFF
+        mov rax, 0xFFFFFFFFFFFFFFFF
+        fxrstor [rdi]
+        pop rax
+        pop rdx
+        ret
+
 

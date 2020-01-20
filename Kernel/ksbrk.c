@@ -9,7 +9,7 @@ vaddr_t ksbrk_kernel_end;
 vaddr_t ksbrk_actual_end;
 
 void ksbrk_init(void){
-    ksbrk_kernel_end = KERNEL_MAPPING_BASE + KERNEL_INITIAL_MAPPING_END;
+    ksbrk_kernel_end = KERNEL_INITIAL_MAPPING_END;
     ksbrk_actual_end = ksbrk_kernel_end;
 }
 
@@ -20,7 +20,6 @@ void* ksbrk(int64_t delta){
     vaddr_t new_kernel_end = ksbrk_kernel_end + delta;
     vaddr_t new_actual_end = up_align(new_kernel_end, 4 KB);
     void* result = (void*)ksbrk_kernel_end;
-    printf("Mapping from %p to %p\n", ksbrk_actual_end, new_actual_end);
     for(vaddr_t cur = ksbrk_actual_end; cur < new_actual_end; cur += 4096){
         vmcore_map_new_at(cur);
         asmutils_invalidate_cache(cur);

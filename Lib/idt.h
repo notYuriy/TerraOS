@@ -1,4 +1,4 @@
-#ifndef __IDT_H_INCLDUED__
+#ifndef __IDT_H_INCLUDED__
 #define __IDT_H_INCLUDED__
 #include <utils.h>
 

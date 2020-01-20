@@ -10,7 +10,8 @@
 #define MB * 1024 * 1024
 #define GB * 1024 * 1024 * 1024
 #define KERNEL_INITIAL_MAPPING_SIZE 64 MB
-#define KERNEL_INITIAL_MAPPING_END 128 MB
+#define KERNEL_INITIAL_MAPPING_END (KERNEL_INITIAL_MAPPING_SIZE + KERNEL_MAPPING_BASE)
+#define ARRSIZE(arr) (sizeof(arr)/sizeof(*arr))
 
 typedef int64_t ssize_t;
 

@@ -11,6 +11,7 @@ spinlock_lock:
         mov rax, 0
         mov rbx, 1
         cmpxchg qword [rdi], rbx
+        pause
         jnz .wait
         pop rbx
         pop rax
@@ -26,4 +27,3 @@ spinlock_unlock:
         pop rbx
         pop rax
         ret
-        

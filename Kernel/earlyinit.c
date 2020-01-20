@@ -11,16 +11,33 @@
 #include <portio.h>
 #include <pic.h>
 #include <timer.h>
+#include <time.h>
+#include <init.h>
 
-void test_callback(){
-    printf("ok, i am testing callback\n");
+#define KINIT_STATUS_SUCCESSFUL_FAILURE 0
+#define KINIT_STATUS_STANDING_BY 1
+
+void system_log_status(char* module_name, int status){
+    printf("[Kernel Init] %s status: ", module_name);
+    if(status == KINIT_STATUS_STANDING_BY){
+        video_packed_color_t color = video_get_packed_color();
+        video_set_foreground(light_green);
+        printf("Standing by\n");
+        video_set_packed_color(color);
+    }
+    if(status == KINIT_STATUS_SUCCESSFUL_FAILURE){
+        video_packed_color_t color = video_get_packed_color();
+        video_set_foreground(red);
+        printf("Successful failure\n");
+        video_set_packed_color(color);
+    }
 }
 
-void kmain(uint64_t physinfo){
+void system_earlyinit(uint64_t physinfo){
     video_init();
     printf("[Kernel Init] Kernel identity paging initialized\n");
     printf("[Kernel Init] SSE enabled\n");
-    printf("[Kernel Init] GDT status: Standing by\n");
+    system_log_status("GDT", KINIT_STATUS_STANDING_BY);
     printf("[Kernel Init] Kernel is now in long mode\n");
     printf("[Kernel Init] Kernel is now mapped to the higher half\n");
     printf("[Kernel Init] Cache invalidated for the initial mapping\n");
@@ -103,20 +120,22 @@ void kmain(uint64_t physinfo){
     phinfo.mmap_entries_count = memory_map_entries_count;
     phinfo.mmap_entries = entries;
     kheap_init(phinfo);
-    printf("[Kernel Init] Kernel Heap status: Standing by\n");
-    kheap_traverse();
+    system_log_status("Kernel Heap", KINIT_STATUS_STANDING_BY);
     phmmngr_init(phinfo);
-    printf("[Kernel Init] Physical memory manager status: Standing by\n");
+    system_log_status("Physical allocator", KINIT_STATUS_STANDING_BY);
     splitter_init();
-    printf("[Kernel Init] Path splitter status: Standing by\n");
+    system_log_status("Path splitter", KINIT_STATUS_STANDING_BY);
     idt_init();
-    printf("[Kernel Init] IDT status: Standing by\n");
+    system_log_status("IDT", KINIT_STATUS_STANDING_BY);
     ksbrk_init();
-    printf("[Kernel Init] Ksbrk standing by\n");
+    system_log_status("Kernel sbrk", KINIT_STATUS_STANDING_BY);
     pic_init();
-    printf("[Kernel Init] PIC initialized\n");
-    timer_init(20);
-    timer_set_callback(test_callback);
+    system_log_status("PIC", KINIT_STATUS_STANDING_BY);
+    timer_init(100);
+    system_log_status("Timer 100Hz", KINIT_STATUS_STANDING_BY);
     timer_enable();
-    while(1);
+    printf("[Kernel Init] Fully initalized. Calling system_init\n");
+    time_sleep(1000);
+    video_clear_screen();
+    system_init();
 }

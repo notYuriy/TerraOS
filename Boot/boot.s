@@ -1,7 +1,7 @@
 ; taken from phill-opp higher half github demo
 
 global start
-extern kmain
+extern system_earlyinit
 global p2_table
 
 KERNEL_MAPPING_BASE equ 0xffff800000000000
@@ -192,8 +192,11 @@ start64_2:
         mov qword [rax], 0
         invlpg [0]
         mov edi, esi
-        call kmain
+        call system_earlyinit
+        cli
+.halt:
         hlt
+        jmp .halt
 
 section .bss
 align 4096

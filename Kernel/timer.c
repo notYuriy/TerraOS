@@ -6,6 +6,7 @@
 #include <spinlock.h>
 
 uint64_t ticks_count;
+uint32_t timer_frequency;
 timer_callback_t timer_callback;
 
 void timer_inc(){
@@ -15,7 +16,12 @@ void timer_inc(){
     }
 }
 
+uint32_t timer_get_frequency(void){
+    return timer_frequency;
+}
+
 void timer_init(uint32_t frequency){
+    timer_frequency = frequency;
     ticks_count = 0;
     idt_set_handler(IRQ0, timer_inc);
     uint32_t divisor = 1193180 / frequency;
