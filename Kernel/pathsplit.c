@@ -45,7 +45,11 @@ splitted_path_node_t* splitter_split_path(char* path){
     }
     if(!slash_appeared)
     {
-        return NULL;
+        result->name = malloc(i + 1);
+        result->name[i] = '\0';
+        result->next = NULL;
+        memcpy(result->name, path, i);
+        return result;
     }
     size_t len = i - name_start;
     if(len == 0)
