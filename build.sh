@@ -10,7 +10,7 @@ nasm -f elf64 Asm/spinlock.s -o Obj/spinlock
 for name in Kernel/*.c
 do
         obj="$(basename -- $name)"
-        ~/opt/cross/bin/x86_64-elf-gcc -o Obj/$obj -c $name -ILib -std=gnu99 -ffreestanding -O2 -Wall -Wextra  -mcmodel=large -mno-sse -mno-sse2 -mno-sse3 -mno-red-zone
+        ~/opt/cross/bin/x86_64-elf-gcc -o Obj/$obj -c $name -IInclude -std=gnu99 -ffreestanding -O2 -Wall -Wextra  -mcmodel=large -mno-sse -mno-sse2 -mno-sse3 -mno-red-zone
 done
 # linking everything together
 ld -n -o Obj/kernel.bin -T Ld/linker.ld Obj/*

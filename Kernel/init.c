@@ -34,6 +34,7 @@ bool timer_test(){
         printf("sleeping for %llu seconds\n", i);
         time_sleep(i * 1000);
     }
+    return true;
 }
 
 bool (*test_suites[])() = { 
