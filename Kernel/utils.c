@@ -14,23 +14,19 @@ void panic(char* error){
 }
 
 void memcpy(void* dst, void* src, size_t count){
-    for(size_t i = 0; i < count; ++i)
-    {
+    for(size_t i = 0; i < count; ++i){
         ((char*)dst)[i] = ((char*)src)[i];
     }
 }
 
 int strcmp(char* str1, char* str2){
-    while((*str1 == *str2) && *str1 == '\0')
-    {
+    while((*str1 == *str2) && *str1 == '\0'){
         str1++; str2++;
     }
-    if(*str1 < *str2)
-    {
+    if(*str1 < *str2){
         return -1;
     }
-    if(*str1 > *str2)
-    {
+    if(*str1 > *str2){
         return 1;
     }
     return 0;

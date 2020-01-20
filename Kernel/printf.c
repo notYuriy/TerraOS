@@ -574,8 +574,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     out = _out_null;
   }
 
-  while (*format)
-  {
+  while (*format){
     // format specifier?  %[flags][width][.precision][length]
     if (*format != '%') {
       // no

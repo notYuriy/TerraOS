@@ -13,6 +13,7 @@
 #include <timer.h>
 #include <time.h>
 #include <init.h>
+#include <kybrd.h>
 
 #define KINIT_STATUS_SUCCESSFUL_FAILURE 0
 #define KINIT_STATUS_STANDING_BY 1
@@ -54,43 +55,34 @@ void system_earlyinit(uint64_t physinfo){
     uint64_t ramdisk_end = 0;
     uint32_t memory_map_entries_count = 0;
     boot_memory_map_entry_t* entries = NULL;
-    while(!boot_is_terminator(tag))
-    {
-        if(tag->type == BOOT_MEMORY_MAP_TAG_ID)
-        {
+    while(!boot_is_terminator(tag)){
+        if(tag->type == BOOT_MEMORY_MAP_TAG_ID){
             memory_map_entries_count = boot_get_memory_map_entries_count(tag);
             entries = boot_get_memory_map_entries(tag);
         }
-        if(tag->type == BOOT_ELF_SECTIONS_TAG_ID)
-        {
+        if(tag->type == BOOT_ELF_SECTIONS_TAG_ID){
             uint32_t sectionCount = boot_get_section_headers_count(tag);
             boot_elf_section_header_t* headers = boot_get_section_headers(tag);
-            for(uint32_t i = 0; i < sectionCount; ++i)
-            {
+            for(uint32_t i = 0; i < sectionCount; ++i){
                 uint64_t physaddr = headers[i].offset;
                 if(physaddr > KERNEL_MAPPING_BASE){
                     physaddr -= KERNEL_MAPPING_BASE;
                 }
-                if(physaddr == 0)
-                {
+                if(physaddr == 0){
                     continue;
                 }
-                if(headers[i].section_size == 0)
-                {
+                if(headers[i].section_size == 0){
                     continue;
                 }
-                if(physaddr < kernel_begin)
-                {
+                if(physaddr < kernel_begin){
                     kernel_begin = physaddr;
                 }
-                if((physaddr + headers[i].section_size) > kernel_end)
-                {
+                if((physaddr + headers[i].section_size) > kernel_end){
                     kernel_end = physaddr + headers[i].section_size;
                 }
             }
         }
-        if(tag->type == BOOT_MODULE_TAG_ID)
-        {
+        if(tag->type == BOOT_MODULE_TAG_ID){
             ramdisk_begin = boot_get_module_physical_base(tag);
             ramdisk_end = boot_get_module_physical_limit(tag);
         }
@@ -105,16 +97,13 @@ void system_earlyinit(uint64_t physinfo){
     phmeminfo_t phinfo;
     phinfo.preserved_area_physical_base = kernel_begin;
     phinfo.preserved_area_physical_limit = kernel_end;
-    if(multiboot_begin < phinfo.preserved_area_physical_base)
-    {
+    if(multiboot_begin < phinfo.preserved_area_physical_base){
         phinfo.preserved_area_physical_base = multiboot_begin;
     }
-    if(ramdisk_begin < phinfo.preserved_area_physical_base)
-    {
+    if(ramdisk_begin < phinfo.preserved_area_physical_base){
         phinfo.preserved_area_physical_base = ramdisk_begin;
     }
-    if(ramdisk_end > phinfo.preserved_area_physical_limit)
-    {
+    if(ramdisk_end > phinfo.preserved_area_physical_limit){
         phinfo.preserved_area_physical_limit = ramdisk_end;
     }
     phinfo.mmap_entries_count = memory_map_entries_count;
@@ -133,9 +122,13 @@ void system_earlyinit(uint64_t physinfo){
     system_log_status("PIC", KINIT_STATUS_STANDING_BY);
     timer_init(100);
     system_log_status("Timer 100Hz", KINIT_STATUS_STANDING_BY);
+    kybrd_init();
+    system_log_status("PS/2 Keyboard", KINIT_STATUS_STANDING_BY);
     timer_enable();
+    kybrd_enable();
     printf("[Kernel Init] Fully initalized. Calling system_init\n");
     time_sleep(1000);
     video_clear_screen();
     system_init();
+    while(1) asm("pause":::);
 }

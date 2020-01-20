@@ -31,8 +31,7 @@ bool phmmngr_is_free(physaddr_t addr){
 void phmmngr_claim_bits(physaddr_t begin, physaddr_t end){
     begin = down_align(begin, 4096ULL);
     end = up_align(end, 4096ULL);
-    for(physaddr_t i = begin; i < end; i += 4096ULL)
-    {
+    for(physaddr_t i = begin; i < end; i += 4096ULL){
         phmmngr_claim_bit(i);
     }
 }
@@ -40,8 +39,7 @@ void phmmngr_claim_bits(physaddr_t begin, physaddr_t end){
 void phmmngr_free_bits(physaddr_t begin, physaddr_t end){
     begin = down_align(begin, 4096ULL);
     end = up_align(end, 4096ULL);
-    for(physaddr_t i = begin; i < end; i += 4096ULL)
-    {
+    for(physaddr_t i = begin; i < end; i += 4096ULL){
         phmmngr_free_bit(i);
     }
 }
@@ -49,16 +47,13 @@ void phmmngr_free_bits(physaddr_t begin, physaddr_t end){
 void phmmngr_init(phmeminfo_t _info){
     memcpy(&info, &_info, sizeof(phmeminfo_t));
     phmmngr_upper_bound = 0ULL;
-    for(uint32_t i = 0ULL; i < info.mmap_entries_count; ++i)
-    {
-        if(info.mmap_entries[i].type != BOOT_MEMORY_MAP_AVAILABLE)
-        {
+    for(uint32_t i = 0ULL; i < info.mmap_entries_count; ++i){
+        if(info.mmap_entries[i].type != BOOT_MEMORY_MAP_AVAILABLE){
             continue;
         }
         uint32_t end = info.mmap_entries[i].base_addr +
          info.mmap_entries[i].length;
-        if(end > phmmngr_upper_bound)
-        {
+        if(end > phmmngr_upper_bound){
             phmmngr_upper_bound = end;
         }
     }
@@ -71,10 +66,8 @@ void phmmngr_init(phmeminfo_t _info){
     longmemset(phmmngr_bitmap, phmmngr_bitmap_size, 0);
     phmmngr_claim_bits(0, KERNEL_INITIAL_MAPPING_SIZE);
     phmmngr_claim_bits(phmmngr_upper_bound, phmmngr_search_bound);
-    for(uint32_t i = 0ULL; i < info.mmap_entries_count; ++i)
-    {
-        if(info.mmap_entries[i].type == BOOT_MEMORY_MAP_AVAILABLE)
-        {
+    for(uint32_t i = 0ULL; i < info.mmap_entries_count; ++i){
+        if(info.mmap_entries[i].type == BOOT_MEMORY_MAP_AVAILABLE){
             continue;
         }
         phmmngr_claim_bits
@@ -90,17 +83,13 @@ physaddr_t phmmngr_alloc(size_t count){
     spinlock_lock(&phmmngr_spinlock);
     physaddr_t begin = 0;
     size_t seqcount = 0;
-    for(physaddr_t i = 0; i < phmmngr_search_bound; i += 4096)
-    {
-        if(phmmngr_is_free(i))
-        {
-            if(begin == 0)
-            {
+    for(physaddr_t i = 0; i < phmmngr_search_bound; i += 4096){
+        if(phmmngr_is_free(i)){
+            if(begin == 0){
                 seqcount = 0;
                 begin = i;
             }
-            else
-            {
+            else{
                 seqcount++;
                 if(seqcount == count){
                     phmmngr_claim_bits(begin, i);
@@ -109,10 +98,8 @@ physaddr_t phmmngr_alloc(size_t count){
                 }
             }
         }
-        else
-        {
-            if(begin != 0)
-            {
+        else{
+            if(begin != 0){
                 begin = 0;
                 seqcount = 0;
             }
@@ -124,10 +111,8 @@ physaddr_t phmmngr_alloc(size_t count){
 
 physaddr_t phmmngr_new_frame(void){
     spinlock_lock(&phmmngr_spinlock);
-    for(size_t i = 0; i < phmmngr_bitmap_size; ++i)
-    {
-        if(phmmngr_bitmap[i] != (unsigned long long int)(-1LL))
-        {
+    for(size_t i = 0; i < phmmngr_bitmap_size; ++i){
+        if(phmmngr_bitmap[i] != (unsigned long long int)(-1LL)){
             physaddr_t base = 64 * 4096 * i;
             int bitpos = bit_scan_forward(~phmmngr_bitmap[i]);
             physaddr_t addr = base + bitpos * 4096;

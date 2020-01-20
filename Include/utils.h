@@ -26,15 +26,13 @@ inline uint64_t down_align(uint64_t value, uint64_t align){
 }
 
 inline void longmemset(uint64_t* begin, uint64_t count, uint64_t val){
-    for(uint64_t i = 0; i < count; ++i)
-    {
+    for(uint64_t i = 0; i < count; ++i){
         begin[i] = val;
     }
 }
 
 inline void memset(char* begin, uint64_t count, char val){
-    for(uint64_t i = 0; i < count; ++i)
-    {
+    for(uint64_t i = 0; i < count; ++i){
         begin[i] = val;
     }
 }

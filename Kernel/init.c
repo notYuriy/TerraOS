@@ -12,8 +12,9 @@
 #include <pic.h>
 #include <timer.h>
 #include <time.h>
+#include <kybrd.h>
 
-#define RUN_TEST_SUITES 1
+//#define RUN_TEST_SUITES 1
 
 bool allocator_test_suite(){
     void* result1 = kheap_malloc(16 MB);
@@ -35,6 +36,11 @@ bool timer_test(){
         time_sleep(i * 1000);
     }
     return true;
+}
+
+bool kr_ot_shterna(){
+    printf("Haha, you will fail me!\n");
+    return false;
 }
 
 bool path_splitter_test(){
@@ -74,7 +80,8 @@ bool (*test_suites[])() = {
     allocator_test_suite, 
     interrupt_handling_test, 
     timer_test,
-    path_splitter_test
+    path_splitter_test,
+    kr_ot_shterna
 };
 
 void report_test_result(bool success){
@@ -116,4 +123,9 @@ void system_init(void){
         printf("Nothing else to do for now, shutting down...\n");
         return;
 #endif
+    printf("Keyboard test now\n");
+    kybrd_event_t c;
+    while(true){
+        printf("%c", (c = kybrd_poll_event()).code);
+    }
 }

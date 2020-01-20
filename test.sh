@@ -1,1 +1,1 @@
-qemu-system-x86_64 -cdrom Iso/TerraOS.iso -m 64M -no-reboot -monitor stdio 
+qemu-system-x86_64 -cdrom Iso/TerraOS.iso -m 64M -no-reboot -monitor stdio

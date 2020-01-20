@@ -6,8 +6,7 @@ void kstub_init(kstub_t* stub, size_t size){
 }
 
 void* kstub_new(kstub_t* stub){
-    if(stub->head == NULL)
-    {
+    if(stub->head == NULL){
         return kheap_malloc(stub->object_size);
     }
     void* result = kheap_get_data(stub->head);

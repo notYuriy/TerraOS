@@ -32,8 +32,7 @@ void video_clear_screen(void){
     spinlock_lock(&video_spinlock);
     video_row = 0;
     video_column = 0;
-    for(size_t i = 0; i < video_width * video_height; ++i)
-    {
+    for(size_t i = 0; i < video_width * video_height; ++i){
         video_buffer[i] = video_pack_color_and_char(' ', video_packed_color);
     }
     spinlock_unlock(&video_spinlock);
@@ -41,12 +40,10 @@ void video_clear_screen(void){
 
 inline void video_scroll(void){
     size_t i;
-    for(i = 0; i < video_width * (video_height - 1); ++i)
-    {
+    for(i = 0; i < video_width * (video_height - 1); ++i){
         video_buffer[i] = video_buffer[video_width + i];
     }
-    for(; i < video_width * video_height; ++i)
-    {
+    for(; i < video_width * video_height; ++i){
         video_buffer[i] = video_pack_color_and_char(' ', video_packed_color);
     }
     video_column = 0;
@@ -58,11 +55,9 @@ inline void video_put_at(video_coord_t x, video_coord_t y, char c){
 }
 
 inline void video_putrawc(char c){
-    if(video_column == video_width)
-    {
+    if(video_column == video_width){
         video_column = 0; video_row++;
-        if(video_row == video_height)
-        {
+        if(video_row == video_height){
             video_scroll();
         }
     }
@@ -84,39 +79,43 @@ void video_set_foreground(video_color_t color){
 }
 
 void __video_putc(char c){
-    if(c == '\n')
-    {
+    if(c == '\n'){
         size_t to_skip = video_width - video_column;
-        if(video_column == video_width)
-        {
+        if(video_column == video_width){
             to_skip = video_width;
         }
-        for(size_t i = 0; i < to_skip; ++i)
-        {
+        for(size_t i = 0; i < to_skip; ++i){
             video_putrawc(' ');
         } 
         return;
     }
-    if(c == '\t')
-    {
+    if(c == '\r') return;
+    if(c == '\t'){
         size_t to_skip = 
         ((((video_column + video_tab_size))
         /video_tab_size)*video_tab_size) - video_column;
-        for(size_t i = 0; i < to_skip; ++i)
-        {
+        for(size_t i = 0; i < to_skip; ++i){
             video_putrawc(' ');
         }
         return;
     }
-    if(c == '\r')
-    {
+    if(c == '\b'){
+        if(video_column == 0){
+            if(video_row != 0){
+                video_row--;
+                video_column = video_width - 1;
+            }
+        }else{
+            video_column -= 1;
+        }
         return;
     }
-    if(c == '\x08')
-    {
+    if(c == '\r'){
+        return;
+    }
+    if(c == '\x08'){
         --video_column;
-        if(video_column == -1)
-        {
+        if(video_column == -1){
             video_column = video_width - 1;
             video_row = (video_row == 0)?(0):(video_row - 1);
         }
@@ -136,8 +135,7 @@ void _putchar(char c){
 
 void video_write(char* str, size_t len){
     spinlock_lock(&video_spinlock);
-    for(size_t i = 0; i < len; ++i)
-    {
+    for(size_t i = 0; i < len; ++i){
         __video_putc(str[i]);
     }
     spinlock_unlock(&video_spinlock);

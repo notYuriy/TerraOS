@@ -18,19 +18,15 @@ splitted_path_node_t* splitter_split_path(char* path){
     size_t name_start = 0;
     size_t i;
     bool slash_appeared = false;
-    for(i = 0; path[i] != '\0'; ++i)
-    {
+    for(i = 0; path[i] != '\0'; ++i){
         //ignore slash sequence
-        if(path[i] == '/')
-        {
+        if(path[i] == '/'){
             slash_appeared = true;
             size_t len = i - name_start;
-            if(len == 0)
-            {
+            if(len == 0){
                 current->name = NULL;
             }
-            else
-            {
+            else{
                 size_t nullterm_len = len + 1;
                 char* copied_name = kheap_malloc(nullterm_len);
                 memcpy(copied_name, path + name_start, len);
@@ -43,8 +39,7 @@ splitted_path_node_t* splitter_split_path(char* path){
             name_start = i + 1;
         }
     }
-    if(!slash_appeared)
-    {
+    if(!slash_appeared){
         result->name = kheap_malloc(i + 1);
         result->name[i] = '\0';
         result->next = NULL;
@@ -52,12 +47,10 @@ splitted_path_node_t* splitter_split_path(char* path){
         return result;
     }
     size_t len = i - name_start;
-    if(len == 0)
-    {
+    if(len == 0){
         current->name = NULL;
     }
-    else
-    {
+    else{
         size_t nullterm_len = len + 1;
         char* copied_name = kheap_malloc(nullterm_len);
         memcpy(copied_name, path + name_start, len);
@@ -65,20 +58,16 @@ splitted_path_node_t* splitter_split_path(char* path){
         current->name = copied_name;
     }
     current = result;
-    while(current != NULL)
-    {
-        if(current->next == NULL)
-        {
+    while(current != NULL){
+        if(current->next == NULL){
             break;
         }
-        if(current->next->name == NULL)
-        {
+        if(current->next->name == NULL){
             splitted_path_node_t* next = current->next;
             current->next = next->next;
             kstub_delete(&spitter_stub, next);
         }
-        else
-        {
+        else{
             current = current->next;
         }
     }
@@ -87,10 +76,8 @@ splitted_path_node_t* splitter_split_path(char* path){
 }
 
 void splitter_free_splitted_path(splitted_path_node_t* splitted){
-    while(splitted != NULL)
-    {
-        if(splitted->name != NULL)
-        {
+    while(splitted != NULL){
+        if(splitted->name != NULL){
             kheap_free(splitted->name);
         }
         splitted_path_node_t* next = splitted->next;

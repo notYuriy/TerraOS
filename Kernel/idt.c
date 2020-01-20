@@ -58,8 +58,7 @@ void install_idt_vector(int index, uint64_t addr){
 install_idt_vector(n, (uint64_t)int##n##_handler);
 
 void idt_default_handler(idt_stack_frame_t* frame){
-    char* exceptions_names[] =
-    {
+    char* exceptions_names[] ={
         "Divide-by-zero Error",
         "Debug",
         "Non-maskable Interrupt",
@@ -95,12 +94,10 @@ void idt_default_handler(idt_stack_frame_t* frame){
     };
     video_packed_color_t color = video_get_packed_color();
     video_set_foreground(red);
-    if(frame->intno > 31)
-    {
+    if(frame->intno > 31){
         printf("Unhandled interrupt with no %lld\n", frame->intno);
     }
-    else
-    {
+    else{
         printf("Unhandled exception with id %llu: %s\n", frame->intno, exceptions_names[frame->intno]);
         printf("Error code %llu\n", frame->errcode);
         while(1);
@@ -372,8 +369,7 @@ void idt_init(void){
         INSTALL_HANDLER(254)
         INSTALL_HANDLER(255)
     }
-    for(size_t i = 0; i < 255; ++i)
-    {
+    for(size_t i = 0; i < 255; ++i){
         idt_set_handler(i, idt_default_handler);
     }
 }

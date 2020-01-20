@@ -3,8 +3,7 @@ ENTRY(start)
 SECTIONS {
         . = 1M;
 
-        .header :
-        {
+        .header :{
                 KEEP(*(.header))
         }
 
