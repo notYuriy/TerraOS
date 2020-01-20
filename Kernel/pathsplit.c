@@ -3,16 +3,16 @@
 #include <kstub.h>
 #include <video.h>
 
-kstub_t stub;
+kstub_t spitter_stub;
 
 void splitter_init(void){
-    kstub_init(&stub, sizeof(splitted_path_node_t));
+    kstub_init(&spitter_stub, sizeof(splitted_path_node_t));
 }
 
 //return null terminated array of given string
 // /dev/zero
 splitted_path_node_t* splitter_split_path(char* path){
-    splitted_path_node_t* result = kstub_new(&stub);
+    splitted_path_node_t* result = kstub_new(&spitter_stub);
     splitted_path_node_t* current = result;
     result->next = NULL;
     size_t name_start = 0;
@@ -37,7 +37,7 @@ splitted_path_node_t* splitter_split_path(char* path){
                 copied_name[len] = '\0';
                 current->name = copied_name;
             }
-            current->next = kstub_new(&stub);
+            current->next = kstub_new(&spitter_stub);
             current = current->next;
             current->next = NULL;
             name_start = i + 1;
@@ -45,7 +45,7 @@ splitted_path_node_t* splitter_split_path(char* path){
     }
     if(!slash_appeared)
     {
-        result->name = malloc(i + 1);
+        result->name = kheap_malloc(i + 1);
         result->name[i] = '\0';
         result->next = NULL;
         memcpy(result->name, path, i);
@@ -75,7 +75,7 @@ splitted_path_node_t* splitter_split_path(char* path){
         {
             splitted_path_node_t* next = current->next;
             current->next = next->next;
-            kstub_delete(&stub, next);
+            kstub_delete(&spitter_stub, next);
         }
         else
         {
@@ -87,12 +87,14 @@ splitted_path_node_t* splitter_split_path(char* path){
 }
 
 void splitter_free_splitted_path(splitted_path_node_t* splitted){
-    while(splitted->next != NULL)
+    while(splitted != NULL)
     {
         if(splitted->name != NULL)
         {
-            kstub_flush(&stub);
+            kheap_free(splitted->name);
         }
-        splitted = splitted->next;
+        splitted_path_node_t* next = splitted->next;
+        kstub_delete(&spitter_stub, splitted);
+        splitted = next;
     }
 }

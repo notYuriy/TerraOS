@@ -37,10 +37,44 @@ bool timer_test(){
     return true;
 }
 
+bool path_splitter_test(){
+    char* paths[] = {
+        "kek",
+        ".",
+        "*",
+        "/",
+        "/dev",
+        "dev/",
+        "/dev/",
+        "/dev/str",
+        "/dev/strio",
+        "//",
+        "dev//",
+        "//dev",
+        "usr//e/"
+    };
+    for(size_t i = 0; i < ARRSIZE(paths); ++i){
+        splitted_path_node_t* node = splitter_split_path(paths[i]);
+        printf("\nSplitting path \"%s\"\n", paths[i]);
+        while(node != NULL){
+            if(node->name == NULL){
+                printf("This path is rooted\n");
+            }else{
+                printf("Going to the subdirectory \"%s\"\n", node->name);
+            }
+            node = node->next;
+            time_sleep(500);
+        }
+        splitter_free_splitted_path(node);
+    }
+    return true;
+}
+
 bool (*test_suites[])() = { 
     allocator_test_suite, 
     interrupt_handling_test, 
-    timer_test
+    timer_test,
+    path_splitter_test
 };
 
 void report_test_result(bool success){
