@@ -17,9 +17,10 @@ Completed:
 * Spinlocks for thread-safety
 * PIC
 * Timer support
+* Keyboard support
 
 Not completed:
-* Keyboard support
+* Filesystem
 * Threading
 * Userspace
 * Elf parsing/loading/executing
