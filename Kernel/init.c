@@ -52,6 +52,10 @@ void system_init(void){
             video_clear_screen();
             goto cleanup;
         }
+        if(strcmp(buf, "clear") == 0){
+            video_clear_screen();
+            goto cleanup;
+        }
         if(strcmp(buf, "kernelmem") == 0){
             kheap_traverse();
             goto cleanup;
