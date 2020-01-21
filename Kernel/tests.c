@@ -60,11 +60,12 @@ bool splitter_test(){
         "/dev/",
         "/dev/str",
         "/dev/strio",
-        "/dev/main/lol//kek/cheburek/",
+        "/dev/main/lol//kek/cheburek//",
         "//",
         "dev//",
         "//dev",
-        "usr//e/"
+        "usr//e/",
+        ""
     };
     for(size_t i = 0; i < ARRSIZE(paths); ++i){
         splitted_path_node_t* node = splitter_split_path(paths[i]);

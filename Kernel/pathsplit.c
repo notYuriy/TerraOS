@@ -16,8 +16,10 @@ splitted_path_node_t* splitter_split_path(char* path){
     char* path_copy = kheap_malloc(len + 1);
     path_copy[len] = '\0';
     memcpy(path_copy, path, len + 1);
-    splitted_path_node_t* result = kstub_new(&splitter_stub);
-    splitted_path_node_t* current = result;
+    splitted_path_node_t head;
+    head.next = NULL;
+    head.name = NULL;
+    splitted_path_node_t* current = &head;
     current->next = NULL;
     current->name = NULL;
     size_t start = 0;
@@ -26,25 +28,34 @@ splitted_path_node_t* splitter_split_path(char* path){
             path_copy[i] = '\0';
             if(i == 0){
                 current->next = kstub_new(&splitter_stub);
-                current->name = NULL;
                 current = current->next;
+                current->name = NULL;
             }
             else{
                 //zeros are now slashes
                 //ignore repeatable slashes
                 //and slashes at the end of the path
-                if((i != len - 1)){
-                    current->name = path_copy + start;
-                    current->next = kstub_new(&splitter_stub);
-                    current = current->next;
+                if((path_copy[i - 1] != '\0') && (i != len - 1)){
+                    char* pointer = path_copy + start;
+                    if(*(pointer) != '\0'){
+                        current->next = kstub_new(&splitter_stub);
+                        current = current->next;
+                        current->name = pointer;
+                    }
                 }
             }
+            if(i != len - 1)
             start = i + 1;
         }
     }
-    current->name = path_copy + start;
+    char* pointer = path_copy + start;
+    if(*pointer != '\0'){
+        current->next = kstub_new(&splitter_stub);
+        current = current->next;
+        current->name = pointer;
+    }
     current->next = NULL;
-    return result;
+    return head.next;
 }
 
 void splitter_free_splitted_path(splitted_path_node_t* splitted){
