@@ -88,16 +88,6 @@ check_long_mode:
         mov al, "2"
         jmp error
 
-check_apic:
-        mov eax, 1
-        cpuid
-        test edx, 1 << 9
-        jz .no_apic
-        ret
-.no_apic:
-        mov al, '3'
-        jmp error
-
 setup_page_tables:
         mov eax, p3_table - KERNEL_MAPPING_BASE
         or eax, 0b11        ; present + writable
