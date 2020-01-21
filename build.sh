@@ -1,5 +1,6 @@
 rm -rf Obj
 mkdir Obj
+declare CC="~/opt/cross/bin/x86_64-elf-gcc"
 # compiling assembly stuff
 nasm -f elf64 Boot/boot.s -o Obj/boot
 nasm -f elf64 Boot/multiboot.s -o Obj/multiboot
@@ -10,7 +11,7 @@ nasm -f elf64 Asm/spinlock.s -o Obj/spinlock
 for name in Kernel/*.c
 do
         obj="$(basename -- $name)"
-        ~/opt/cross/bin/x86_64-elf-gcc -o Obj/$obj -c $name -IInclude -std=gnu99 -ffreestanding -O2 -Wall -Wextra  -mcmodel=large -mno-sse -mno-sse2 -mno-sse3 -mno-red-zone
+        eval "$CC -o Obj/$obj -c $name -IInclude -std=gnu99 -ffreestanding -O2 -Wall -Wextra  -mcmodel=large -mno-sse -mno-sse2 -mno-sse3 -mno-red-zone"
 done
 # linking everything together
 ld -n -o Obj/kernel.bin -T Ld/linker.ld Obj/*

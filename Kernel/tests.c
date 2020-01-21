@@ -60,6 +60,7 @@ bool splitter_test(){
         "/dev/",
         "/dev/str",
         "/dev/strio",
+        "/dev/main/lol//kek/cheburek/",
         "//",
         "dev//",
         "//dev",
@@ -77,6 +78,7 @@ bool splitter_test(){
             node = node->next;
         }
         splitter_free_splitted_path(node);
+        time_sleep(500);
     }
     return true;
 }

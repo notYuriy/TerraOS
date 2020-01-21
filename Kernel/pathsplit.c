@@ -28,11 +28,12 @@ splitted_path_node_t* splitter_split_path(char* path){
                 current->next = kstub_new(&splitter_stub);
                 current->name = NULL;
                 current = current->next;
-            }else{
+            }
+            else{
                 //zeros are now slashes
                 //ignore repeatable slashes
                 //and slashes at the end of the path
-                if(path_copy[i - 1] != '\0' && i != len - 1){
+                if((i != len - 1)){
                     current->name = path_copy + start;
                     current->next = kstub_new(&splitter_stub);
                     current = current->next;
