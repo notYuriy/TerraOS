@@ -36,5 +36,5 @@ Hence, vfs_file_t looks like this
         int (*read)(vfs_file_private_t, char*, int);
         int (*write)(vfs_file_private_t, char*, int);
         int (*seek)(vfs_file_private_t, int, int);
-        int (*readdir)(vfs_file_private_t);
+        int (*readdir)(vfs_file_private_t, vfs_dirent_t*);
     } vfs_file_t;
