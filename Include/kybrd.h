@@ -11,6 +11,7 @@
 
 typedef struct kybrd_event_struct {
     char code;
+    char raw_code;
     uint8_t mask;
 } kybrd_event_t;    
 

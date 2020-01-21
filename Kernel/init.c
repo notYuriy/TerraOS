@@ -13,119 +13,81 @@
 #include <timer.h>
 #include <time.h>
 #include <kybrd.h>
+#include <tty.h>
+#include <tests.h>
 
-//#define RUN_TEST_SUITES 1
-
-bool allocator_test_suite(){
-    void* result1 = kheap_malloc(16 MB);
-    printf("Pointer to the first 16 MB pool %p\n", result1);
-    void* result2 = kheap_malloc(16 MB);
-    printf("Pointer to the second 16 MB pool %p\n", result2);
-    return result1 != result2 && result1 != NULL && result2 != NULL;
-}
-
-bool interrupt_handling_test(){
-    printf("Calling int 57 just for fun\n");
-    asm("int $57":::);
-    return true;
-}
-
-bool timer_test(){
-    for(size_t i = 0; i < 3; ++i){
-        printf("sleeping for %llu seconds\n", i);
-        time_sleep(i * 1000);
-    }
-    return true;
-}
-
-bool kr_ot_shterna(){
-    printf("Haha, you will fail me!\n");
-    return false;
-}
-
-bool path_splitter_test(){
-    char* paths[] = {
-        "kek",
-        ".",
-        "*",
-        "/",
-        "/dev",
-        "dev/",
-        "/dev/",
-        "/dev/str",
-        "/dev/strio",
-        "//",
-        "dev//",
-        "//dev",
-        "usr//e/"
-    };
-    for(size_t i = 0; i < ARRSIZE(paths); ++i){
-        splitted_path_node_t* node = splitter_split_path(paths[i]);
-        printf("\nSplitting path \"%s\"\n", paths[i]);
-        while(node != NULL){
-            if(node->name == NULL){
-                printf("This path is rooted\n");
-            }else{
-                printf("Going to the subdirectory \"%s\"\n", node->name);
-            }
-            node = node->next;
-            time_sleep(500);
-        }
-        splitter_free_splitted_path(node);
-    }
-    return true;
-}
-
-bool (*test_suites[])() = { 
-    allocator_test_suite, 
-    interrupt_handling_test, 
-    timer_test,
-    path_splitter_test,
-    kr_ot_shterna
-};
-
-void report_test_result(bool success){
-    video_packed_color_t color = video_get_packed_color();
-    if(success){
-        video_set_foreground(light_green);
-        printf("OK");
-    }else{
-        video_set_foreground(red);
-        printf("Successful failure");
-    }
-    video_set_packed_color(color);
-}
+#define RUN_TEST_SUITES 0
 
 void system_init(void){
+    video_set_foreground(light_grey);
     printf("Terra OS. 64 bit operating system project\n");
     printf("Copyright @notYuriy. Project is licensed under MIT license\n");
-#ifdef RUN_TEST_SUITES
-        printf("Running test suites\n");
-        for(size_t i = 0; i < ARRSIZE(test_suites); ++i){
-            printf("Running test %llu\n", i);
-            video_set_foreground(light_grey);
-            bool result = test_suites[i]();
-            video_set_foreground(cyan);
-            printf("Test result: ");
-            report_test_result(result);
-            video_putc('\n');
-            if(!result){
-                video_set_foreground(light_red);
-                printf("As we can clearly see, this os is a +-><[].* piece of junk\n");
-                printf("This can be reasonably confirmed from test results\n");
-                printf("You should delete it and install linux instead\n");
-                printf("Nothing else to do for now, shutting down...\n");
-                return;
-            }
-        }
-        video_set_foreground(light_green);
-        printf("Wow! All tests suites are completed!\n");
-        printf("Nothing else to do for now, shutting down...\n");
-        return;
+#if RUN_TEST_SUITES == 1
+    tests_run();
 #endif
-    printf("Keyboard test now\n");
-    kybrd_event_t c;
     while(true){
-        printf("%c", (c = kybrd_poll_event()).code);
+        video_set_foreground(light_green);
+        printf("$");
+        video_set_foreground(light_brown);
+        printf("root> ");
+        video_set_foreground(white);
+        char buf[160];
+        size_t size = getline(buf, ARRSIZE(buf));
+        video_set_foreground(light_grey);
+        if(strcmp(buf, "version") == 0){
+            printf("Terra OS. 64 bit operating system project\n");
+            printf("Copyright @notYuriy. Project is licensed under MIT license\n");
+            goto cleanup;
+        }
+        if(strcmp(buf, "help") == 0){
+            printf("help - show this message\n");
+            printf("version - show kernel version\n");
+            printf("cls - clear screen\n");
+            printf("kernelmem - show kernel memory usage statistics\n");
+            printf("license - print license\n");
+            printf("tests - run test suites\n");
+            goto cleanup;
+        }
+        if(strcmp(buf, "cls") == 0){
+            video_clear_screen();
+            goto cleanup;
+        }
+        if(strcmp(buf, "kernelmem") == 0){
+            kheap_traverse();
+            goto cleanup;
+        }
+        if(strcmp(buf, "tests") == 0){
+            tests_run();
+        }
+        if(strcmp(buf, "license") == 0){
+            printf(
+                "MIT License\n"
+                "\n"
+                "Copyright (c) 2020 Yuriy Zamyatin\n"
+                "\n"
+                "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
+                "of this software and associated documentation files (the \"Software\"), to deal\n"
+                "in the Software without restriction, including without limitation the rights\n"
+                "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
+                "copies of the Software, and to permit persons to whom the Software is\n"
+                "furnished to do so, subject to the following conditions:\n"
+                "\n"
+                "The above copyright notice and this permission notice shall be included in all\n"
+                "copies or substantial portions of the Software.\n"
+                "\n"
+                "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
+                "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
+                "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
+                "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
+                "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
+                "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
+                "SOFTWARE.\n"
+            );
+            goto cleanup;
+        }
+        printf("Unknown command\n");
+cleanup:
+        memset(buf, size, '\0');
     }
+    return;
 }

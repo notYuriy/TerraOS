@@ -17,8 +17,7 @@ bool kybrd_right_shift_pressed;
 bool kybrd_ctrl_pressed;
 bool kybrd_caps_pressed;
 
-char kybrd_scancodes[128] =
-{
+char kybrd_scancodes[128] = {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
   '9', '0', '-', '=', '\b',	/* Backspace */
   '\t',			/* Tab */
@@ -52,6 +51,88 @@ char kybrd_scancodes[128] =
     0,	/* Insert Key */
     0,	/* Delete Key */
     0,   0,   0,
+    0,	/* F11 Key */
+    0,	/* F12 Key */
+    0,	/* All other keys are undefined */
+};
+
+unsigned char kybrd_scancodes_shifted[128] =
+{
+    0,  27, '!', '@', '#', '$' /* shift+4 */, '%', '^', '&', '*',	/* 9 */
+  '(', ')', '_', '+', '\b',	/* Backspace */
+  '\t',			/* Tab */
+
+ 'Q', 'W', 'E', 'R',   /* 19 */
+  'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', /* Enter key */
+    0,          /* 29   - Control */
+  'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', /* 39 */
+ '\"', '>',   0,        /* Left shift */
+ '*', 'Z', 'X', 'C', 'V', 'B', 'N',            /* 49 */
+  'M', '<', '>', '?',   0,              /* Right shift */
+
+  '*',
+    0,	/* Alt */
+  ' ',	/* Space bar */
+    0,	/* Caps lock */
+    0,	/* 59 - F1 key ... > */
+    0,   0,   0,   0,   0,   0,   0,   0,
+    0,	/* < ... F10 */
+    0,	/* 69 - Num lock*/
+    0,	/* Scroll Lock */
+    0,	/* Home key */
+    0,	/* Up Arrow */
+    0,	/* Page Up */
+  '-',
+    0,	/* Left Arrow */
+    0,
+    0,	/* Right Arrow */
+  '+',
+    0,	/* 79 - End key*/
+    0,	/* Down Arrow */
+    0,	/* Page Down */
+    0,	/* Insert Key */
+    0,	/* Delete Key */
+    0,   0,   '>',
+    0,	/* F11 Key */
+    0,	/* F12 Key */
+    0,	/* All other keys are undefined */
+};
+
+unsigned char kybrd_scancodes_alted[128] =
+{
+    0,  27, 0 /*alt+1*/, '\"', 0, ';', 0, ':', '?', 0,	/* 9 */
+  '(', ')', '_', '+', '\b',	/* Backspace */
+  '\t',			/* Tab */
+  'Q', 'W', 'E', 'R',	/* 19 */
+  'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n',	/* Enter key */
+    0,			/* 29   - Control */
+  'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';',	/* 39 */
+ '\"', '`',   0,		/* Left shift */
+ '\\', 'Z', 'X', 'C', 'V', 'B', 'N',			/* 49 */
+  'M', ',', '.', '/',   0,				/* Right shift */
+  '*',
+    0,	/* Alt */
+  ' ',	/* Space bar */
+    0,	/* Caps lock */
+    0,	/* 59 - F1 key ... > */
+    0,   0,   0,   0,   0,   0,   0,   0,
+    0,	/* < ... F10 */
+    0,	/* 69 - Num lock*/
+    0,	/* Scroll Lock */
+    0,	/* Home key */
+    0,	/* Up Arrow */
+    0,	/* Page Up */
+  '-',
+    0,	/* Left Arrow */
+    0,
+    0,	/* Right Arrow */
+  '+',
+    0,	/* 79 - End key*/
+    0,	/* Down Arrow */
+    0,	/* Page Down */
+    0,	/* Insert Key */
+    0,	/* Delete Key */
+    0,   0,  '|',
     0,	/* F11 Key */
     0,	/* F12 Key */
     0,	/* All other keys are undefined */
@@ -104,31 +185,32 @@ inline kybrd_event_t kybrd_buffer_pop_back(){
 #define KYBRD_CAPS_PRESSED_SCANCODE 0x3a
 #define KYBRD_CAPS_RELEASED_SCANCODE 0xba
 
-char kybrd_get_char(char c, bool capitalize){
+char kybrd_get_char(char c, bool shift, bool alt){
     if(c & 0x80){
         c = c & (~(char)(0x80));
     }
-    c = kybrd_scancodes[c];
-    if(!capitalize){
-        return c;
+    if(!shift){
+        return kybrd_scancodes[(uint8_t)c];;
     }
-    if(c >= 'A' && c <= 'Z'){
-        return c - 'A' + 'a';
+    else if(!alt){
+        return kybrd_scancodes_shifted[(uint8_t)c];
     }
-    if(c >= 'a' && c <= 'z'){
-        return c - 'a' + 'A';
+    else{
+        return kybrd_scancodes_alted[(uint8_t)c];
     }
     return c;
 }
 
 void kybrd_irq_handler(){
     kybrd_code_t code = inb(0x60);
+    bool kybrd_shift = 
+                kybrd_left_shift_pressed || kybrd_right_shift_pressed;
     switch (code){
         case KYBRD_ALT_PRESSED_SCANCODE:
-            kybrd_alt_pressed = true;
+            if(kybrd_shift)
+                kybrd_alt_pressed = !kybrd_alt_pressed;
             break;
         case KYBRD_ALT_RELEASED_SCANCODE:
-            kybrd_alt_pressed = false;
             break;
         case KYBRD_LEFT_SHIFT_PRESSED_SCANCODE:
             kybrd_left_shift_pressed = true;
@@ -154,17 +236,13 @@ void kybrd_irq_handler(){
         case KYBRD_CAPS_RELEASED_SCANCODE:
             break;
         default:{
-            bool kybrd_shift = 
-                kybrd_left_shift_pressed || kybrd_right_shift_pressed;
             if(kybrd_caps_pressed){
                 kybrd_shift = !kybrd_shift;
             }
             kybrd_event_t event;
-            event.code = kybrd_get_char(code, kybrd_shift);
-            if(event.code == 57){
-                printf("Caps code: 0x%x\n", (int)code);
-            }
-            event.mask = KYBRD_FLAG_PRESENT;
+            event.raw_code = code;
+            event.code = kybrd_get_char(code, kybrd_shift, kybrd_alt_pressed);
+            if(event.code != 0) event.mask = KYBRD_FLAG_PRESENT; else event.mask = 0;
             event.mask |= (kybrd_shift)?(KYBRD_FLAG_SHIFT):(0);
             event.mask |= (kybrd_alt_pressed)?(KYBRD_FLAG_ALT):(0);
             event.mask |= (kybrd_ctrl_pressed)?(KYBRD_FLAG_CONTROL):(0);

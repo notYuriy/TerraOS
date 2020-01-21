@@ -20,7 +20,7 @@ void memcpy(void* dst, void* src, size_t count){
 }
 
 int strcmp(char* str1, char* str2){
-    while((*str1 == *str2) && *str1 == '\0'){
+    while((*str1 == *str2) && *str1 != '\0'){
         str1++; str2++;
     }
     if(*str1 < *str2){

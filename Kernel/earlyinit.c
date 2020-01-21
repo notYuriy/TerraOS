@@ -130,5 +130,5 @@ void system_earlyinit(uint64_t physinfo){
     time_sleep(1000);
     video_clear_screen();
     system_init();
-    while(1) asm("pause":::);
+    while(1) asm("pause");
 }
