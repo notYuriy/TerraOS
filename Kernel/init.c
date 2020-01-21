@@ -42,7 +42,7 @@ void system_init(void){
         if(strcmp(buf, "help") == 0){
             printf("help - show this message\n");
             printf("version - show kernel version\n");
-            printf("cls - clear screen\n");
+            printf("cls/clear - clear screen\n");
             printf("kernelmem - show kernel memory usage statistics\n");
             printf("license - print license\n");
             printf("tests - run test suites\n");
