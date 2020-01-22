@@ -14,6 +14,7 @@
 #include <time.h>
 #include <init.h>
 #include <kybrd.h>
+#include <thread.h>
 
 #define KINIT_STATUS_SUCCESSFUL_FAILURE 0
 #define KINIT_STATUS_STANDING_BY 1
@@ -126,6 +127,8 @@ void system_earlyinit(uint64_t physinfo){
     system_log_status("PS/2 Keyboard", KINIT_STATUS_STANDING_BY);
     timer_enable();
     kybrd_enable();
+    thread_init_subsystem();
+    system_log_status("Scheduler", KINIT_STATUS_STANDING_BY);
     printf("[Kernel Init] Fully initalized. Calling system_init\n");
     time_sleep(1000);
     video_clear_screen();

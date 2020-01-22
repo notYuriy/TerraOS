@@ -1,5 +1,6 @@
 #include <vmcore.h>
 #include <phmmngr.h>
+#include <kheap.h>
 
 vaddr_t vmcore_walk_to_next_table(vaddr_t current, vindex_t index){
     return (current << 9ULL) | ((uint64_t)index << 12ULL);
@@ -64,10 +65,28 @@ void vmcore_map_at(vaddr_t addr, physaddr_t physaddr){
     ref = vmcore_walk_to_next_table_alloc(ref, vmcore_p3_index(addr));
     ref = vmcore_walk_to_next_table_alloc(ref, vmcore_p2_index(addr));
     ref += 8 * vmcore_p1_index(addr);
-    *(uint64_t*)ref = physaddr | VMCORE_KERNEL_FLAGS;
+    if((*(uint64_t*)ref & VMCORE_ALLOCATED_FLAG) != 0){
+        physaddr_t phys = *(uint64_t*)ref & (~VMCORE_FLAGS_MASK);
+        phmmngr_free_frame(phys);
+    }
+    if(physaddr != 0){
+        *(uint64_t*)ref = physaddr | VMCORE_KERNEL_FLAGS;
+    }
+    else{
+        *(uint64_t*)ref = phmmngr_new_frame() | VMCORE_KERNEL_FLAGS | VMCORE_ALLOCATED_FLAG;
+    }
     asmutils_invalidate_cache(addr);
 }
 
 void vmcore_map_new_at(vaddr_t addr){
-    vmcore_map_at(addr, phmmngr_new_frame());
+    vmcore_map_at(addr, 0);
+}
+
+vaddr_t vmcore_kmmap(vaddr_t vaddr, physaddr_t physaddr, uint64_t count){
+    if(vaddr == 0) vaddr = (vaddr_t)kheap_malloc_aligned(4096 * count, 4096);
+    for(size_t i = 0; i < count; ++i){
+        vaddr += 4096;
+        if(physaddr != 0) physaddr += 4096;
+    }
+    return vaddr;
 }

@@ -30,16 +30,17 @@ spinlock_unlock:
         ret
 
 spinlock_trylock:
-        push rax
         push rbx
 .wait:
         mov rax, 0
         mov rbx, 1
         cmpxchg qword [rdi], rbx
-        .jnz .locked
-        mov rax, 1
+        jnz .locked
+        pop rbx
+        mov rax, 0xFFFFFFFFFFFFFFFF
         ret
 .locked:
+        pop rbx
         mov rax, 0
         ret
 

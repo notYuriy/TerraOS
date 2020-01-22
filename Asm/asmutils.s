@@ -4,7 +4,10 @@ global asmutils_load_p4_table
 global asmutils_invalidate_cache
 global asmutils_load_idt
 global asmutils_div_by_zero
-global asmutils_kek_handler
+global asmutils_load_ext_regs
+global asmutils_store_ext_regs
+global asmutils_get_p4_table
+global asmutils_get_rflags
 
 asmutils_load_p4_table:
         mov cr3, rdi
@@ -38,4 +41,11 @@ asmutils_load_ext_regs:
         pop rdx
         ret
 
+asmutils_get_p4_table:
+        mov rax, cr3
+        ret
 
+asmutils_get_rflags:
+        pushfq
+        pop rax
+        ret

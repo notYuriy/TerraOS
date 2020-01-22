@@ -4,7 +4,7 @@
 #include <utils.h>
 #include <idt.h>
 
-typedef void (*timer_callback_t)(uint64_t ticks_count);
+typedef void (*timer_callback_t)(uint64_t ticks_count, idt_stack_frame_t* frame);
 void timer_init(uint32_t frequency);
 void timer_enable(void);
 void timer_disable(void);

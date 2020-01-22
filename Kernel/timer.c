@@ -4,15 +4,17 @@
 #include <portio.h>
 #include <pic.h>
 #include <spinlock.h>
+#include <kstub.h>
 
 uint64_t ticks_count;
 uint32_t timer_frequency;
 timer_callback_t timer_callback;
+kastub_t tasks_stub;
 
-void timer_inc(){
+void timer_inc(idt_stack_frame_t* frame){
     ticks_count++;
     if(timer_callback != NULL){
-        timer_callback(ticks_count);
+        timer_callback(ticks_count, frame);
     }
 }
 

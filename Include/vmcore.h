@@ -18,6 +18,7 @@
 #define VMCORE_KERNEL_FLAGS VMCORE_PRESENT_FLAG | \
                                 VMCORE_WRITABLE_FLAG | \
                                 VMCORE_USER_ACCESSIBLE_FLAG
+#define VMCORE_ALLOCATED_FLAG (uint64_t)(1ULL<<9ULL)
 
 typedef uint64_t vaddr_t;
 typedef uint64_t ventry_t;
@@ -57,4 +58,5 @@ inline vindex_t vmcore_p1_index(vaddr_t addr){
 
 void vmcore_map_at(vaddr_t vaddr, physaddr_t physaddr);
 void vmcore_map_new_at(vaddr_t vaddr);
+vaddr_t vmcore_kmmap(vaddr_t vaddr, physaddr_t physaddr, uint64_t count);
 #endif

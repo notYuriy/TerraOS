@@ -158,6 +158,7 @@ void* kheap_search_free_blocks(size_t size){
 }
 
 void* kheap_malloc(size_t size){
+    size = up_align(size, 16);
     spinlock_lock(&kheap_spinlock);
     void* result = kheap_search_free_blocks(size);
     if(result == NULL){
