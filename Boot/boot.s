@@ -100,18 +100,40 @@ setup_page_tables:
         or eax, 0b11        ; present + writable
         mov [p3_table - KERNEL_MAPPING_BASE], eax
 
-        ; map each PD entry to a huge (2MiB) page
-        mov ecx, 0
-.next_pd_entry:
-        mov eax, 0x200000
-        mul ecx
-        or eax, 0b10000011  ; present + writable + huge
-        mov [p2_table - KERNEL_MAPPING_BASE + ecx * 8], eax
-        inc ecx
+        mov eax, 0; current address
+        mov ebx, p1_tables - KERNEL_MAPPING_BASE ; current p1 table offset
+        mov ecx, 0 ; current p2 table index
+.next_p2_entry:
         cmp ecx, 32
-        jne .next_pd_entry        
+        je .done
+        mov edx, ebx
+        or edx, 0b11 ; present + writable
+        mov [p2_table - KERNEL_MAPPING_BASE + 8 * ecx], edx
+        call map_p2_entry ; this will automatically add to eax and ebx
+        inc ecx
+        jmp .next_p2_entry
+.done:
 
         ret
+
+; eax - start address
+; ebx - p1 entry address
+map_p2_entry:
+        push ecx
+        mov ecx, 0
+.next_p1_entry:
+        cmp ecx, 512
+        je .done
+        or eax, 0b11 ; present + writable
+        mov [ebx], eax
+        add eax, 4096
+        add ebx, 8
+        inc ecx
+        jmp .next_p1_entry
+.done:
+        pop ecx
+        ret
+
 
 enable_paging:
         ; load PML4 to cr3 register
@@ -195,6 +217,8 @@ p3_table:
         resb 4096
 p2_table:
         resb 4096
+p1_tables:
+        resb 4096 * 512
 stack_bottom: ; code segment
         resb 3 * 4096
 stack_top:
