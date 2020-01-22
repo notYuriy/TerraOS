@@ -2,6 +2,7 @@ bits 64
 
 global spinlock_lock
 global spinlock_unlock
+global spinlock_trylock
 
 spinlock_lock:
         ;rdi - spinlock addr
@@ -27,3 +28,18 @@ spinlock_unlock:
         pop rbx
         pop rax
         ret
+
+spinlock_trylock:
+        push rax
+        push rbx
+.wait:
+        mov rax, 0
+        mov rbx, 1
+        cmpxchg qword [rdi], rbx
+        .jnz .locked
+        mov rax, 1
+        ret
+.locked:
+        mov rax, 0
+        ret
+
