@@ -17,7 +17,7 @@ Completed:
 * Spinlocks for thread-safety
 * PIC
 * Timer support
-* Keyboard support
+* Keyboard support (not thread safe)
 
 Not completed:
 * Filesystem
