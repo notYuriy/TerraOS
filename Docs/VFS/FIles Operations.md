@@ -15,7 +15,14 @@ Here is the list of operations on files offered by VFS
 - Readdir (get next directory descriptor)
  
 Also, we need to remember the fd of the directory, where this file is located to open special subdirectories.
-Because vfs nodes have to be removed one day, we remember their opened children count (to remove node if it is not used by any child)
+
+Next pointer store the location of the next entry.
+Prev pointer is required to perform deletition given pointer to list node only.
+Child pointer points to one of the children
+
+Finally, mounted pointer points to filesystem if it is mounted
+
+To ensure threading safety, every file/folder in vfs file tree is protected using spinlock (better thread syncronisation will be added later)
 
 Hence, vfs_file_t looks like this
 
@@ -26,7 +33,10 @@ Hence, vfs_file_t looks like this
     typedef struct vfs_file_struct {
         vfs_file_private_t m_this;
         vfs_file_t* parent;
-        size_t reference_count;
+        vfs_file_t* prev;
+        vfs_file_t* next;
+        vfs_file_t* chld;
+        spinlock_t spinlock;
         void (*init)(vfs_file_private_t);
         void (*finalize)(vfs_file_private_t);
         vfs_file_t* (*openat)(vfs_file_private_t, char*);
