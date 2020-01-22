@@ -22,7 +22,6 @@ start:
         call enable_paging
 
         call check_sse
-        call check_apic
         call enable_sse
 
         lgdt [gdt64.pointer_low - KERNEL_MAPPING_BASE]

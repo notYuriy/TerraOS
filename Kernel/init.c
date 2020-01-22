@@ -62,6 +62,7 @@ void system_init(void){
         }
         if(strcmp(buf, "tests") == 0){
             tests_run();
+            goto cleanup;
         }
         if(strcmp(buf, "license") == 0){
             printf(
