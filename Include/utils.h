@@ -48,6 +48,12 @@ inline int bit_scan_forward(uint64_t x) {
    return (int) x;
 }
 
+inline uint64_t fetch_and_add(uint64_t* p, uint64_t val){
+    __asm__ volatile("lock; xaddq %0, %1"
+    : "+r" (val), "+m"(p)
+    :
+    : "memory");
+}
 
 void panic(char* error);
 

@@ -83,10 +83,15 @@ void vmcore_map_new_at(vaddr_t addr){
 }
 
 vaddr_t vmcore_kmmap(vaddr_t vaddr, physaddr_t physaddr, uint64_t count){
-    if(vaddr == 0) vaddr = (vaddr_t)kheap_malloc_aligned(4096 * count, 4096);
-    for(size_t i = 0; i < count; ++i){
-        vaddr += 4096;
-        if(physaddr != 0) physaddr += 4096;
+    if(vaddr == 0){
+        vaddr = (vaddr_t)kheap_malloc_aligned(4096 * count, 4096);
+    }
+    if(physaddr != 0){
+        for(size_t i = 0; i < count; ++i){
+            vmcore_map_at(vaddr, physaddr);
+            physaddr += 4096;
+            vaddr += 4096;
+        }
     }
     return vaddr;
 }

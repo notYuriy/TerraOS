@@ -121,14 +121,15 @@ void system_earlyinit(uint64_t physinfo){
     system_log_status("Kernel sbrk", KINIT_STATUS_STANDING_BY);
     pic_init();
     system_log_status("PIC", KINIT_STATUS_STANDING_BY);
-    timer_init(100);
+    timer_init(10000);
     system_log_status("Timer 100Hz", KINIT_STATUS_STANDING_BY);
     kybrd_init();
     system_log_status("PS/2 Keyboard", KINIT_STATUS_STANDING_BY);
-    timer_enable();
-    kybrd_enable();
     thread_init_subsystem();
     system_log_status("Scheduler", KINIT_STATUS_STANDING_BY);
+    printf("[Kernel Init] Kernel basic services initialized. Unmasking irqs.\n");
+    timer_enable();
+    kybrd_enable();
     printf("[Kernel Init] Fully initalized. Calling system_init\n");
     time_sleep(1000);
     video_clear_screen();

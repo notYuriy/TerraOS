@@ -100,7 +100,8 @@ void idt_default_handler(idt_stack_frame_t* frame){
     else{
         printf("Unhandled exception with id %llu: %s\n", frame->intno, exceptions_names[frame->intno]);
         printf("Error code %llu\n", frame->errcode);
-        while(1);
+        printf("Addr %p\n", frame->cr2);
+        while(true);
     }
     
     video_set_packed_color(color);

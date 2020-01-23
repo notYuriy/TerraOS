@@ -18,23 +18,23 @@
 #include <thread.h>
 
 #define RUN_TEST_SUITES 0
-#define RUN_SHELL 1
-
-uint64_t val;
+#define RUN_SHELL 0
 
 void thread1(){
     while(1){
-        time_sleep(1000);
-        video_set_foreground(light_blue);
-        printf("Hi! I am thread 1!\n");
+        //time_sleep(1000);
+        //video_set_foreground(light_blue);
+        //printf("Hi! I am thread 1!\n");
+        thread_summon(thread1, 1);
     }
 }
 
 void thread2(){
     while(1){
-        time_sleep(1000);
-        video_set_foreground(light_red);
-        printf("Hi! I am thread 2!\n");
+        //time_sleep(1000);
+        //video_set_foreground(light_red);
+        //printf("Hi! I am thread 2!\n");
+        thread_summon(thread2, 1);
     }
 }
 
@@ -117,7 +117,7 @@ cleanup:
     }
     return;
 #endif
-    //thread_summon(thread1, 0);
-    //thread_summon(thread2, 0);
+    thread_summon(thread1, 0);
+    thread_summon(thread2, 0);
     while(1);
 }
