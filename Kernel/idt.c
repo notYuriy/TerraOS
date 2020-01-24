@@ -1,7 +1,7 @@
 #include <idt.h>
 #include <video.h>
 #include <portio.h>
-
+#include <pic.h>
 
 typedef struct idt_entry_struct {
     uint16_t addr_low;

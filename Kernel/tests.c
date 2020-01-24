@@ -29,9 +29,9 @@ void report_test_result(bool success){
 }
 
 bool kheap_test(){
+    kheap_traverse();
     void* result1 = kheap_malloc(16 MB);
     printf("Pointer to the first 16 MB pool %p\n", result1);
-    kheap_traverse();
     void* result2 = kheap_malloc(16 MB);
     printf("Pointer to the second 16 MB pool %p\n", result2);
     kheap_free(result1); kheap_free(result2);
@@ -96,25 +96,28 @@ bool getline_test(){
 }
 
 _Atomic size_t col = 2;
-_Atomic size_t returned = 5;
+_Atomic size_t returned = 100;
+_Atomic size_t thread_id = 0;
 
 void printer(){
-    size_t mycol = col++;
+    size_t mycol = (col++) % 14 + 2;
+    size_t mythreadid = thread_id++;
     for(size_t i = 0; i < 5; ++i){
         video_set_foreground(mycol);
-        printf("Hi! I am thread %llu, using color %llu\n", mycol - 1, mycol);
+        printf("Hi! I am thread %llu, using color %llu\n", mythreadid, mycol);
         time_sleep(1000);
     }
     returned--;
 }
 
 bool multitasking_test(void){
-    for(size_t i = 0; i < 5; ++i){
+    for(size_t i = 0; i < 100; ++i){
         thread_summon(printer, 0);
         time_sleep(100);
     }
     while(returned != 0) asm("pause":::);
-    printf("Here\n");
+    col = 2;
+    returned = 100;
     return true;
 }
 

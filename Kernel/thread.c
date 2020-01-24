@@ -3,7 +3,7 @@
 #include <idt.h>
 #include <fstate.h>
 #include <spinlock.h>
-#include <kstub.h>
+#include <kslub.h>
 #include <vmcore.h>
 #include <stdatomic.h>
 
@@ -11,7 +11,8 @@ void thread_call_stub(thread_entry_point_t entry);
 
 uint64_t asmutils_get_p4_table(void);
 uint64_t asmutils_get_rflags(void);
-_Atomic uint64_t  process_count;
+_Atomic uint64_t process_count;
+_Atomic uint64_t preempt;
 
 typedef struct task_state_struct task_state_t;
 
@@ -26,7 +27,6 @@ typedef struct task_state_struct {
 
 task_state_t* current;
 task_state_t* prev;
-spinlock_t yield_lock;
 kastub_t tasks_stub;
 
 void thread_copy_frame_to_state(idt_stack_frame_t* frame){
@@ -39,11 +39,10 @@ void thread_copy_state_to_frame(idt_stack_frame_t* frame){
     asmutils_load_ext_regs(current->regs);
 }
 
-
 void thread_summon(thread_entry_point_t main, size_t stack_size){
     task_state_t* new_task = kastub_new(&tasks_stub);
+    preempt = 0;
     new_task->id = process_count;
-    __atomic_fetch_add(&process_count, 1, __ATOMIC_SEQ_CST);
     memset(new_task->regs, sizeof(new_task->regs), 0);
     memset((void*)&(new_task->frame), sizeof(new_task->frame), 0);
     size_t stack_pages_size = ((stack_size + 4095)/4096) + 1;
@@ -61,6 +60,7 @@ void thread_summon(thread_entry_point_t main, size_t stack_size){
     new_task->deleted = false;
     //we assume, that this op is atomic here
     current->next = new_task;
+    preempt = 1;
 }
 
 void thread_exit(void){
@@ -70,35 +70,32 @@ void thread_exit(void){
 }
 
 void thread_yield_using_frame(idt_stack_frame_t* frame){
-    uint64_t result = spinlock_trylock(&yield_lock);
-    if(result != 0){
-        task_state_t* next = current->next;
-        if(current->deleted == true){
-            prev->next = next;
-            kheap_free(current->stack_base);
-        }else{
-            prev = current;
-        }
+    task_state_t* next = current->next;
+    if(current->deleted){
+        kheap_free(current->stack_base);
+        kastub_delete(&tasks_stub, current);
+        prev->next = next;
+        current = next;
+        thread_copy_state_to_frame(frame);
+    }else{
         thread_copy_frame_to_state(frame);
         prev = current;
         current = next;
         thread_copy_state_to_frame(frame);
-        spinlock_unlock(&yield_lock);
-    }
+    }    
 }
 
 void thread_scheduler_isr(
     uint64_t __attribute__((unused)) ticks_count, 
     idt_stack_frame_t* frame){
-    thread_yield_using_frame(frame);
+    if(preempt != 0) thread_yield_using_frame(frame);
 }
 
 void thread_init_subsystem(void){
-    timer_disable();
     //alignment requirement for extended save
+    preempt = 1;
     kastub_init(&tasks_stub, sizeof(task_state_t), 64);
     timer_set_callback(thread_scheduler_isr);
-    yield_lock = 0;
     current = kastub_new(&tasks_stub);
     memset(current->regs, sizeof(current->regs), 0);
     memset((void*)&(current->frame), sizeof(current->frame), 0);
@@ -109,5 +106,4 @@ void thread_init_subsystem(void){
     for(size_t i = 0; i < 10000; ++i){
         kastub_delete(&tasks_stub, kastub_new(&tasks_stub));
     }
-    timer_enable();
 }

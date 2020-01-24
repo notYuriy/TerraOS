@@ -143,13 +143,11 @@ void* kheap_search_free_blocks(size_t size){
             current->next = NULL;
             current->size = size;
             prev->next = new_node;
-            spinlock_unlock(&kheap_spinlock);
             return (void*)(current + 1);
         }
         if(current->size >= size){
             prev->next = current->next;
             current->next = NULL;
-            spinlock_unlock(&kheap_spinlock);
             return (void*)(current + 1);
         }
         prev = prev->next;
@@ -162,8 +160,8 @@ void* kheap_malloc(size_t size){
     spinlock_lock(&kheap_spinlock);
     void* result = kheap_search_free_blocks(size);
     if(result == NULL){
-        printf("Search was not successful\n");
         result = kheap_sbrk_malloc(size);
+        
         spinlock_unlock(&kheap_spinlock);
         return result;
     }
@@ -172,9 +170,11 @@ void* kheap_malloc(size_t size){
 }
 
 void kheap_free(void* addr){
+    spinlock_lock(&kheap_spinlock);
     kheap_object_header_t* obj = (kheap_object_header_t*)(addr) - 1;
     obj->next = head->next;
     head->next = obj;
+    spinlock_unlock(&kheap_spinlock);
 }
 
 void* kheap_search_aligned_free_blocks(size_t size, size_t align){
@@ -201,6 +201,7 @@ void* kheap_search_aligned_free_blocks(size_t size, size_t align){
                 cur->next = after;
                 after->size = space_after_pages - sizeof(kheap_object_header_t);
             }
+            prev->next = cur->next;
             return kheap_get_data(cur);
         }
         if(space_before_align >= sizeof(kheap_object_header_t)){
@@ -213,8 +214,10 @@ void* kheap_search_aligned_free_blocks(size_t size, size_t align){
                 kheap_object_header_t* after = (kheap_object_header_t*)pages_end;
                 after->next = cur->next;
                 cur->next = after;
+                prev->next = after;
                 after->size = space_after_pages - sizeof(kheap_object_header_t);
             }
+            prev->next = cur->next;
             return kheap_get_data(allocated);
         }
         uint64_t new_pages_base = pages_base + align;
@@ -232,6 +235,7 @@ void* kheap_search_aligned_free_blocks(size_t size, size_t align){
                 cur->next = after;
                 after->size = new_space_after_pages - sizeof(kheap_object_header_t);
             }
+            prev->next = cur->next;
             return kheap_get_data(allocated);
         }
         //leaking memory is not acceptable, so we move to next variant

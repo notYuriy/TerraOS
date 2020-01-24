@@ -19,6 +19,8 @@
 #define ICW4_BUF_MASTER	0x0C
 #define ICW4_SFNM	0x10
 
+_Atomic size_t interrupt_cli_requests;
+
 uint8_t pic_slave_mask;
 uint8_t pic_master_mask;
 
@@ -27,6 +29,7 @@ void pic_delay(void){
 }
 
 void pic_init(void){
+    interrupt_cli_requests = 0;
     uint8_t a1, a2;
     a1 = inb(PIC1_DATA);
     a2 = inb(PIC2_DATA);
@@ -53,7 +56,7 @@ void pic_init(void){
     asm("sti");
 }
 
-inline void pic_update(){
+void pic_update(){
     outb(PIC1_DATA, pic_master_mask);
     outb(PIC2_DATA, pic_slave_mask);
 }

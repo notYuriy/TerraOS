@@ -1,12 +1,12 @@
 #include <pathsplit.h>
 #include <kheap.h>
-#include <kstub.h>
+#include <kslub.h>
 #include <video.h>
 
-kstub_t splitter_stub;
+kslub_t splitter_stub;
 
 void splitter_init(void){
-    kstub_init(&splitter_stub, sizeof(splitted_path_node_t));
+    kslub_init(&splitter_stub, sizeof(splitted_path_node_t));
 }
 
 //return null terminated array of given string
@@ -27,7 +27,7 @@ splitted_path_node_t* splitter_split_path(char* path){
         if(path_copy[i] == '/'){
             path_copy[i] = '\0';
             if(i == 0){
-                current->next = kstub_new(&splitter_stub);
+                current->next = kslub_new(&splitter_stub);
                 current = current->next;
                 current->name = NULL;
             }
@@ -38,7 +38,7 @@ splitted_path_node_t* splitter_split_path(char* path){
                 if((path_copy[i - 1] != '\0') && (i != len - 1)){
                     char* pointer = path_copy + start;
                     if(*(pointer) != '\0'){
-                        current->next = kstub_new(&splitter_stub);
+                        current->next = kslub_new(&splitter_stub);
                         current = current->next;
                         current->name = pointer;
                     }
@@ -50,7 +50,7 @@ splitted_path_node_t* splitter_split_path(char* path){
     }
     char* pointer = path_copy + start;
     if(*pointer != '\0'){
-        current->next = kstub_new(&splitter_stub);
+        current->next = kslub_new(&splitter_stub);
         current = current->next;
         current->name = pointer;
     }
@@ -66,7 +66,7 @@ void splitter_free_splitted_path(splitted_path_node_t* splitted){
             path_freed = true;
         }
         splitted_path_node_t* next = splitted->next;
-        kstub_delete(&splitter_stub, splitted);
+        kslub_delete(&splitter_stub, splitted);
         splitted = next;
     }
 }

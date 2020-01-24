@@ -5,11 +5,11 @@
 #include <kheap.h>
 #include <spinlock.h>
 
-typedef struct kstub_struct {
+typedef struct kslub_struct {
     size_t object_size;
     kheap_object_header_t* head;
     spinlock_t spinlock;
-} kstub_t;
+} kslub_t;
 
 typedef struct kastub_struct {
     size_t object_size;
@@ -18,10 +18,10 @@ typedef struct kastub_struct {
     spinlock_t spinlock;
 } kastub_t;
 
-void kstub_init(kstub_t* stub, size_t size);
-void* kstub_new(kstub_t* stub);
-void kstub_delete(kstub_t* stub, void* data);
-void kstub_flush(kstub_t* stub);
+void kslub_init(kslub_t* stub, size_t size);
+void* kslub_new(kslub_t* stub);
+void kslub_delete(kslub_t* stub, void* data);
+void kslub_flush(kslub_t* stub);
 
 void kastub_init(kastub_t* stub, size_t size, size_t align);
 void* kastub_new(kastub_t* stub);

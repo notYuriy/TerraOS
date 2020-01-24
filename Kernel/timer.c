@@ -4,7 +4,7 @@
 #include <portio.h>
 #include <pic.h>
 #include <spinlock.h>
-#include <kstub.h>
+#include <kslub.h>
 
 uint64_t ticks_count;
 uint32_t timer_frequency;
