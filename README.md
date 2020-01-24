@@ -18,10 +18,10 @@ Completed:
 * PIC
 * Timer support
 * Keyboard support (not thread safe)
+* Threading
 
 Not completed:
 * Filesystem
-* Threading
 * Userspace
 * Elf parsing/loading/executing
 * Newlib port for userspace

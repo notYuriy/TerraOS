@@ -124,7 +124,7 @@ map_p2_entry:
 .next_p1_entry:
         cmp ecx, 512
         je .done
-        or eax, 0b11 ; present + writable
+        or eax, 0b11 | (1 << 9) ; present + writable
         mov [ebx], eax
         add eax, 4096
         add ebx, 8

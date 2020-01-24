@@ -17,34 +17,12 @@
 #include <tests.h>
 #include <thread.h>
 
-#define RUN_TEST_SUITES 0
-#define RUN_SHELL 0
-
-void thread1(){
-    while(1){
-        //time_sleep(1000);
-        //video_set_foreground(light_blue);
-        //printf("Hi! I am thread 1!\n");
-        thread_summon(thread1, 1);
-    }
-}
-
-void thread2(){
-    while(1){
-        //time_sleep(1000);
-        //video_set_foreground(light_red);
-        //printf("Hi! I am thread 2!\n");
-        thread_summon(thread2, 1);
-    }
-}
+#define RUN_SHELL 1
 
 void system_init(void){
     video_set_foreground(light_grey);
     printf("Terra OS. 64 bit operating system project\n");
     printf("Copyright @notYuriy. Project is licensed under MIT license\n");
-#if RUN_TEST_SUITES == 1
-    tests_run();
-#endif
 #if RUN_SHELL == 1
     while(true){
         video_set_foreground(light_green);
@@ -56,8 +34,7 @@ void system_init(void){
         size_t size = getline(buf, ARRSIZE(buf));
         video_set_foreground(light_grey);
         if(strcmp(buf, "version") == 0){
-            printf("Terra OS. 64 bit operating system project\n");
-            printf("Copyright @notYuriy. Project is licensed under MIT license\n");
+            printf("Terra OS version -1.0.0\n");
             goto cleanup;
         }
         if(strcmp(buf, "help") == 0){
@@ -117,7 +94,4 @@ cleanup:
     }
     return;
 #endif
-    thread_summon(thread1, 0);
-    thread_summon(thread2, 0);
-    while(1);
 }

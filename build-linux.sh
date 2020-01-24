@@ -11,7 +11,7 @@ nasm -f elf64 Asm/spinlock.s -o Obj/spinlock
 for name in Kernel/*.c
 do
         obj="$(basename -- $name)"
-        eval "$CC -o Obj/$obj -c $name -IInclude -std=gnu99 -ffreestanding -O2 -Wall -Wextra  -mcmodel=large -mno-sse -mno-sse2 -mno-sse3 -mno-red-zone"
+        eval "$CC -o Obj/$obj -c $name -IInclude -std=gnu99 -ffreestanding -O2 -Wall -Wextra -mno-sse -mno-sse2 -mno-sse3 -mcmodel=large -mno-red-zone -funroll-loops"
 done
 # linking everything together
 ld -n -o Obj/kernel.bin -T Ld/linker.ld Obj/*

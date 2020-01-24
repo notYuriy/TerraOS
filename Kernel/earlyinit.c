@@ -121,7 +121,7 @@ void system_earlyinit(uint64_t physinfo){
     system_log_status("Kernel sbrk", KINIT_STATUS_STANDING_BY);
     pic_init();
     system_log_status("PIC", KINIT_STATUS_STANDING_BY);
-    timer_init(10000);
+    timer_init(1000);
     system_log_status("Timer 100Hz", KINIT_STATUS_STANDING_BY);
     kybrd_init();
     system_log_status("PS/2 Keyboard", KINIT_STATUS_STANDING_BY);

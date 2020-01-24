@@ -14,6 +14,7 @@ void ksbrk_init(void){
 }
 
 void* ksbrk(int64_t delta){
+    printf("Requested sbrk of len %llu\n", delta);
     if(delta < 0){
         panic("Negative ksbrk is not supported yet =(\n");
     }
@@ -22,9 +23,9 @@ void* ksbrk(int64_t delta){
     void* result = (void*)ksbrk_kernel_end;
     for(vaddr_t cur = ksbrk_actual_end; cur < new_actual_end; cur += 4096){
         vmcore_map_new_at(cur);
-        asmutils_invalidate_cache(cur);
     }
     ksbrk_actual_end = new_actual_end;
     ksbrk_kernel_end = new_kernel_end;
+    printf("ok\n");
     return result;
 }

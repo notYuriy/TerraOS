@@ -29,6 +29,8 @@ typedef uint8_t video_packed_color_t;
 typedef int8_t video_coord_t;
 
 void video_init(void);
+void video_lock(void);
+void video_unlock(void);
 void video_set_background(video_color_t color);
 void video_set_foreground(video_color_t color);
 void video_putc(char c);

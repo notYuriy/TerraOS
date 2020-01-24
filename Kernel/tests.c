@@ -14,6 +14,7 @@
 #include <time.h>
 #include <kybrd.h>
 #include <tty.h>
+#include <thread.h>
 
 void report_test_result(bool success){
     video_packed_color_t color = video_get_packed_color();
@@ -30,8 +31,10 @@ void report_test_result(bool success){
 bool kheap_test(){
     void* result1 = kheap_malloc(16 MB);
     printf("Pointer to the first 16 MB pool %p\n", result1);
+    kheap_traverse();
     void* result2 = kheap_malloc(16 MB);
     printf("Pointer to the second 16 MB pool %p\n", result2);
+    kheap_free(result1); kheap_free(result2);
     return result1 != result2 && result1 != NULL && result2 != NULL;
 }
 
@@ -79,7 +82,7 @@ bool splitter_test(){
             node = node->next;
         }
         splitter_free_splitted_path(node);
-        time_sleep(500);
+        //time_sleep(500);
     }
     return true;
 }
@@ -92,12 +95,36 @@ bool getline_test(){
     return true;
 }
 
+_Atomic size_t col = 2;
+_Atomic size_t returned = 5;
+
+void printer(){
+    size_t mycol = col++;
+    for(size_t i = 0; i < 5; ++i){
+        video_set_foreground(mycol);
+        printf("Hi! I am thread %llu, using color %llu\n", mycol - 1, mycol);
+        time_sleep(1000);
+    }
+    returned--;
+}
+
+bool multitasking_test(void){
+    for(size_t i = 0; i < 5; ++i){
+        thread_summon(printer, 0);
+        time_sleep(100);
+    }
+    while(returned != 0) asm("pause":::);
+    printf("Here\n");
+    return true;
+}
+
 bool (*test_suites[])() = { 
     kheap_test,
     idt_test,
     timer_test,
     splitter_test,
-    getline_test
+    getline_test,
+    multitasking_test
 };
 
 void tests_run_list(bool (**tests)(void), size_t count){

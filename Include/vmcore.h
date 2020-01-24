@@ -16,8 +16,7 @@
 #define VMCORE_GLOBAL_FLAG (uint64_t)(1ULL<<8ULL)
 #define VMCORE_NO_EXECUTE_FLAG (uint64_t)(1ULL<<63ULL)
 #define VMCORE_KERNEL_FLAGS VMCORE_PRESENT_FLAG | \
-                                VMCORE_WRITABLE_FLAG | \
-                                VMCORE_USER_ACCESSIBLE_FLAG
+                                VMCORE_WRITABLE_FLAG
 #define VMCORE_ALLOCATED_FLAG (uint64_t)(1ULL<<9ULL)
 
 typedef uint64_t vaddr_t;

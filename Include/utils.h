@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdatomic.h>
 
 #define KERNEL_MAPPING_BASE 0xffff800000000000ULL
 #define KB * 1024
@@ -38,7 +39,6 @@ inline void memset(char* begin, uint64_t count, char val){
 }
 
 void memcpy(void* dst, void* src, size_t count);
-
 int strcmp(char* str1, char* str2);
 
 //Used for fast bitmap scanning. Source is taken from

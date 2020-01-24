@@ -47,6 +47,12 @@ int_handler_stub:
         pop rax
         pop rax
         pop rax
+        mov rbx, cr3
+        cmp rax, rbx
+        je .next
+        mov cr3, rax
+        invlpg [rax]
+.next:
         pop rax
         pop rax
         pop r15

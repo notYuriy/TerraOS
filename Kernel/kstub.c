@@ -18,11 +18,13 @@ void* kstub_new(kstub_t* stub){
 }
 
 void kstub_delete(kstub_t* stub, void* data){
-    spinlock_lock(&stub->spinlock);
     kheap_object_header_t* newobj = kheap_get_header(data);
     newobj->next = stub->head;
+    //This operation is atomic
+    //because stubs are 8 byte aligned
+    //and stub->head internally just adds some offset to
+    //stub location
     stub->head = newobj;
-    spinlock_unlock(&stub->spinlock);
 }
 
 void kstub_flush(kstub_t* stub){
@@ -52,11 +54,11 @@ void* kastub_new(kastub_t* stub){
 }
 
 void kastub_delete(kastub_t* stub, void* data){
-    spinlock_lock(&stub->spinlock);
     kheap_object_header_t* newobj = kheap_get_header(data);
     newobj->next = stub->head;
+    //This operation is atomic
+    //because stubs are 8 byte aligned
     stub->head = newobj;
-    spinlock_unlock(&stub->spinlock);
 }
 
 void kastub_flush(kastub_t* stub){

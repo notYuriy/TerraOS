@@ -162,6 +162,7 @@ void* kheap_malloc(size_t size){
     spinlock_lock(&kheap_spinlock);
     void* result = kheap_search_free_blocks(size);
     if(result == NULL){
+        printf("Search was not successful\n");
         result = kheap_sbrk_malloc(size);
         spinlock_unlock(&kheap_spinlock);
         return result;
@@ -171,11 +172,9 @@ void* kheap_malloc(size_t size){
 }
 
 void kheap_free(void* addr){
-    spinlock_lock(&kheap_spinlock);
     kheap_object_header_t* obj = (kheap_object_header_t*)(addr) - 1;
     obj->next = head->next;
     head->next = obj;
-    spinlock_unlock(&kheap_spinlock);
 }
 
 void* kheap_search_aligned_free_blocks(size_t size, size_t align){

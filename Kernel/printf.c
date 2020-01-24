@@ -33,6 +33,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+//(@notYuriy modification)
+#include <video.h>
+//(@notYuriy modification end)
 
 #include "printf.h"
 
@@ -849,11 +852,17 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 ///////////////////////////////////////////////////////////////////////////////
 
 int printf_(const char* format, ...){
+  //(@notYuriy modification)
+  video_lock();
+  //(@notYuriy modification end)
   va_list va;
   va_start(va, format);
   char buffer[1];
   const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
   va_end(va);
+  //(@notYuriy modification)
+  video_unlock();
+  //(@notYuriy modification end)
   return ret;
 }
 

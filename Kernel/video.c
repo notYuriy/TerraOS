@@ -8,8 +8,8 @@ typedef uint16_t video_char_t;
 spinlock_t video_spinlock;
 
 video_char_t* video_buffer;
-const video_coord_t video_width = 80;
-const video_coord_t video_height = 25;
+#define VIDEO_WIDTH 80
+#define VIDEO_HEIGHT 25
 video_coord_t video_row, video_column;
 video_color_t video_background_color;
 video_color_t video_foreground_color;
@@ -32,7 +32,7 @@ void video_clear_screen(void){
     spinlock_lock(&video_spinlock);
     video_row = 0;
     video_column = 0;
-    for(size_t i = 0; i < video_width * video_height; ++i){
+    for(size_t i = 0; i < VIDEO_WIDTH * VIDEO_HEIGHT; ++i){
         video_buffer[i] = video_pack_color_and_char(' ', video_packed_color);
     }
     spinlock_unlock(&video_spinlock);
@@ -40,24 +40,24 @@ void video_clear_screen(void){
 
 inline void video_scroll(void){
     size_t i;
-    for(i = 0; i < video_width * (video_height - 1); ++i){
-        video_buffer[i] = video_buffer[video_width + i];
+    for(i = 0; i < VIDEO_WIDTH * (VIDEO_HEIGHT - 1); ++i){
+        video_buffer[i] = video_buffer[VIDEO_WIDTH + i];
     }
-    for(; i < video_width * video_height; ++i){
+    for(; i < VIDEO_WIDTH * VIDEO_HEIGHT; ++i){
         video_buffer[i] = video_pack_color_and_char(' ', video_packed_color);
     }
     video_column = 0;
-    video_row = video_height - 1;
+    video_row = VIDEO_HEIGHT - 1;
 }
 
 inline void video_put_at(video_coord_t x, video_coord_t y, char c){
-    video_buffer[x + y * video_width] = video_pack_color_and_char(c, video_packed_color);
+    video_buffer[x + y * VIDEO_WIDTH] = video_pack_color_and_char(c, video_packed_color);
 }
 
 inline void video_putrawc(char c){
-    if(video_column == video_width){
+    if(video_column == VIDEO_WIDTH){
         video_column = 0; video_row++;
-        if(video_row == video_height){
+        if(video_row == VIDEO_HEIGHT){
             video_scroll();
         }
     }
@@ -80,9 +80,9 @@ void video_set_foreground(video_color_t color){
 
 void __video_putc(char c){
     if(c == '\n'){
-        size_t to_skip = video_width - video_column;
-        if(video_column == video_width){
-            to_skip = video_width;
+        size_t to_skip = VIDEO_WIDTH - video_column;
+        if(video_column == VIDEO_WIDTH){
+            to_skip = VIDEO_WIDTH;
         }
         for(size_t i = 0; i < to_skip; ++i){
             video_putrawc(' ');
@@ -103,7 +103,7 @@ void __video_putc(char c){
         if(video_column == 0){
             if(video_row != 0){
                 video_row--;
-                video_column = video_width - 1;
+                video_column = VIDEO_WIDTH - 1;
             }
         }else{
             video_column -= 1;
@@ -116,7 +116,7 @@ void __video_putc(char c){
     if(c == '\x08'){
         --video_column;
         if(video_column == -1){
-            video_column = video_width - 1;
+            video_column = VIDEO_WIDTH - 1;
             video_row = (video_row == 0)?(0):(video_row - 1);
         }
     }
@@ -130,7 +130,7 @@ void video_putc(char c){
 }
 
 void _putchar(char c){
-    video_putc(c);
+    __video_putc(c);
 }
 
 void video_write(char* str, size_t len){
@@ -194,11 +194,11 @@ void video_write_hex(char* str, size_t size){
 }
 
 int8_t video_get_screen_width(void){
-    return video_width;
+    return VIDEO_WIDTH;
 }
 
 int8_t video_get_screen_height(void){
-    return video_height;
+    return VIDEO_HEIGHT;
 }
 
 video_packed_color_t video_get_packed_color(void){
@@ -211,5 +211,13 @@ video_packed_color_t video_get_packed_color(void){
 void video_set_packed_color(video_packed_color_t color){
     spinlock_lock(&video_spinlock);
     video_packed_color = color;
+    spinlock_unlock(&video_spinlock);
+}
+
+void video_lock(void){
+    spinlock_lock(&video_spinlock);
+}
+
+void video_unlock(void){
     spinlock_unlock(&video_spinlock);
 }
