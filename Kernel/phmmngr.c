@@ -80,7 +80,7 @@ void phmmngr_init(phmeminfo_t _info){
 }
 
 physaddr_t phmmngr_alloc(size_t count){
-    //spinlock_lock(&phmmngr_spinlock);
+    spinlock_lock(&phmmngr_spinlock);
     physaddr_t begin = 0;
     size_t seqcount = 0;
     for(physaddr_t i = 0; i < phmmngr_search_bound; i += 4096){
@@ -93,7 +93,7 @@ physaddr_t phmmngr_alloc(size_t count){
                 seqcount++;
                 if(seqcount == count){
                     phmmngr_claim_bits(begin, i);
-                    //spinlock_unlock(&phmmngr_spinlock);
+                    spinlock_unlock(&phmmngr_spinlock);
                     return begin;
                 }
             }
@@ -105,30 +105,30 @@ physaddr_t phmmngr_alloc(size_t count){
             }
         }
     }
-    //spinlock_unlock(&phmmngr_spinlock);
+    spinlock_unlock(&phmmngr_spinlock);
     return 0;
 }
 
 physaddr_t phmmngr_new_frame(void){
-    //spinlock_lock(&phmmngr_spinlock);
+    spinlock_lock(&phmmngr_spinlock);
     for(size_t i = 0; i < phmmngr_bitmap_size; ++i){
         if(phmmngr_bitmap[i] != (unsigned long long int)(-1LL)){
             physaddr_t base = 64 * 4096 * i;
             int bitpos = bit_scan_forward(~phmmngr_bitmap[i]);
             physaddr_t addr = base + bitpos * 4096;
             phmmngr_claim_bit(addr);
-            //spinlock_unlock(&phmmngr_spinlock);
+            spinlock_unlock(&phmmngr_spinlock);
             return addr;
         }
     }
-    //spinlock_unlock(&phmmngr_spinlock);
+    spinlock_unlock(&phmmngr_spinlock);
     return 0;
 }
 
 void phmmngr_dealloc(physaddr_t addr, size_t count){
-    //spinlock_lock(&phmmngr_spinlock);
+    spinlock_lock(&phmmngr_spinlock);
     phmmngr_free_bits(addr, addr + 4096 * count);
-    //spinlock_unlock(&phmmngr_spinlock);
+    spinlock_unlock(&phmmngr_spinlock);
 }
 
 void phmmngr_free_frame(physaddr_t addr){

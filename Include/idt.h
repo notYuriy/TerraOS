@@ -22,6 +22,7 @@
 void idt_init(void);
 
 typedef struct idt_stack_frame_struct {
+    uint64_t es;
     uint64_t intno;
     uint64_t cr4, cr3, cr2, cr0;
     uint64_t r15, r14;

@@ -42,8 +42,12 @@ int_handler_stub:
         mov rbx, cr4
         push rbx
         push rax
+        mov rax, es
+        push rax
         mov rdi, rsp
         call idt_dispatcher
+        pop rax
+        mov es, rax
         pop rax
         pop rax
         pop rax

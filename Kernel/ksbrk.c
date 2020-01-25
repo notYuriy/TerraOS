@@ -14,7 +14,6 @@ void ksbrk_init(void){
 }
 
 void* ksbrk(int64_t delta){
-    printf("Requested sbrk of len %llu\n", delta);
     if(delta < 0){
         panic("Negative ksbrk is not supported yet =(\n");
     }
@@ -26,6 +25,5 @@ void* ksbrk(int64_t delta){
     }
     ksbrk_actual_end = new_actual_end;
     ksbrk_kernel_end = new_kernel_end;
-    printf("ok\n");
     return result;
 }

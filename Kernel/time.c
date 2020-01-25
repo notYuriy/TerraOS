@@ -1,6 +1,7 @@
 #include <time.h>
 #include <timer.h>
 #include <video.h>
+#include <thread.h>
 
 void time_sleep(uint64_t millis){
     uint64_t eta_ticks = (millis * timer_get_frequency()) / 1000;
