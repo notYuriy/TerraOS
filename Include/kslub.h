@@ -11,22 +11,22 @@ typedef struct kslub_struct {
     spinlock_t spinlock;
 } kslub_t;
 
-typedef struct kastub_struct {
+typedef struct kaslub_struct {
     size_t object_size;
     size_t object_align;
     kheap_object_header_t* head;
     spinlock_t spinlock;
-} kastub_t;
+} kaslub_t;
 
 void kslub_init(kslub_t* stub, size_t size);
 void* kslub_new(kslub_t* stub);
 void kslub_delete(kslub_t* stub, void* data);
 void kslub_flush(kslub_t* stub);
 
-void kastub_init(kastub_t* stub, size_t size, size_t align);
-void* kastub_new(kastub_t* stub);
-void kastub_delete(kastub_t* stub, void* data);
-void kastub_flush(kastub_t* stub);
+void kaslub_init(kaslub_t* stub, size_t size, size_t align);
+void* kaslub_new(kaslub_t* stub);
+void kaslub_delete(kaslub_t* stub, void* data);
+void kaslub_flush(kaslub_t* stub);
 
 #endif
 

@@ -9,7 +9,7 @@
 uint64_t ticks_count;
 uint32_t timer_frequency;
 timer_callback_t timer_callback;
-kastub_t tasks_stub;
+kaslub_t tasks_stub;
 
 void timer_inc(idt_stack_frame_t* frame){
     ticks_count++;

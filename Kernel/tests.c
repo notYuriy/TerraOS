@@ -115,7 +115,11 @@ bool multitasking_test(void){
         thread_summon(printer, 0);
         time_sleep(100);
     }
-    while(returned != 0) asm("pause":::);
+    printf("Summoning finished\n");
+    while(returned != 0){
+        printf("Waiting for threads\n");
+        time_sleep(10000);
+    }
     col = 2;
     returned = 100;
     return true;

@@ -169,11 +169,15 @@ void* kheap_malloc(size_t size){
     return result;
 }
 
-void kheap_free(void* addr){
-    spinlock_lock(&kheap_spinlock);
+void kheap_free_nonblock(void* addr){
     kheap_object_header_t* obj = (kheap_object_header_t*)(addr) - 1;
     obj->next = head->next;
     head->next = obj;
+}
+
+void kheap_free(void* addr){
+    spinlock_lock(&kheap_spinlock);
+    kheap_free_nonblock(addr);
     spinlock_unlock(&kheap_spinlock);
 }
 

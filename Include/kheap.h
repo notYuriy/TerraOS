@@ -28,6 +28,8 @@ void kheap_init(phmeminfo_t info);
 void* kheap_malloc(size_t size);
 //Free memory in kernel heap
 void kheap_free(void* addr);
+//Free without causing spinlock lock
+void kheap_free_nonblock(void* addr);
 //Allocate aligned memory
 void* kheap_malloc_aligned(size_t size, size_t align);
 //Traverse heap
