@@ -10,11 +10,14 @@ global asmutils_load_ext_regs
 global asmutils_store_ext_regs
 global asmutils_get_p4_table
 global asmutils_get_rflags
-global thread_yield
-global thread_call_stub
-extern thread_yield_using_frame
-extern thread_exit
-extern thread_preempt
+global asmutils_get_cr0
+global asmutils_get_cr2
+global asmutils_get_cr4
+global kthread_call_stub
+global kthread_yield
+global kthread_yield_end
+extern kthread_yield_using_frame
+extern kthread_exit
 
 asmutils_load_p4_table:
         mov cr3, rdi
@@ -52,29 +55,45 @@ asmutils_get_p4_table:
         mov rax, cr3
         ret
 
+asmutils_get_cr0:
+        mov rax, cr0
+        ret
+
+asmutils_get_cr2:
+        mov rax, cr2
+        ret
+
+asmutils_get_cr4:
+        mov rax, cr4
+        ret
+
 asmutils_get_rflags:
         pushfq
         pop rax
         ret
 
-thread_call_stub:
+kthread_call_stub:
         call rdi
-        call thread_exit
+        call kthread_exit
         ; this point is unreachable
 
-; WARNING: All the code below doesn't work. Nobody knows the reason for it
-thread_yield:
+kthread_yield:
         push rax
+        push rbx
+        push rdi
 ; idt frame begin
         mov rax, ss
         push rax
-        push 0 ; we will update this later
+        mov rax, rsp
+        add rax, 8 ; skip ss
+        push rax
         pushfq
         mov rax, cs
         push rax
         lea rax, [rel .recover_point]
         push rax
-        push 0
+        xor rax, rax
+        push rax
         push rax
         push rbx
         push rcx
@@ -98,29 +117,41 @@ thread_yield:
         push rax
         mov rax, cr4
         push rax
-        mov rax, 0
+        mov rax, 0xcafebabe
         push rax
         mov rax, es
         push rax
-        ; setting correct rsp
-        mov rax, rsp
-        mov rbx, rsp
-        add rbx, 200
-        mov [rbx], rax
+        mov rax, ds
+        push rax
+        mov rax, gs
+        push rax
+        mov rax, fs
+        push rax
         mov rdi, rsp
-        ; even if compiler will add original pushes
-        ; rsp is restored at our correct stack address
-        ; this may not work from the first try
-.retry:
-        call thread_yield_using_frame
-        mov rdi, rsp
-        jmp .retry
-.recover_point:
-        ; if we are here, thread was again chosen to run
-        ; and because registers are already restored by a scheduler
-        ; at this point we only need to clean up the stack
-        add rsp, 6 * 8; skipping es - cr0
-        ; from that structure
+        call kthread_yield_using_frame
+        ; this part is called when scheduler finishes
+        pop rax
+        mov fs, rax
+        pop rax
+        mov gs, rax
+        pop rax
+        mov ds, rax
+        pop rax 
+        mov es, rax
+        pop rax ; intno
+        pop rax ; cr4
+        mov cr4, rax
+        pop rax ; cr3
+        mov rbx, cr3
+        cmp rax, rbx
+        je .next
+        mov cr3, rax
+        invlpg [rax]
+.next:
+        pop rax ; cr2
+        mov cr2, rax
+        pop rax ; cr0
+        mov cr0, rax
         pop r15
         pop r14
         pop r13
@@ -136,9 +167,12 @@ thread_yield:
         pop rcx
         pop rbx
         pop rax
-        ; skipping errcode - ss
-        add rsp, 6 * 8
-        ; pop original rax
+        add rsp, 8
+        iretq
+.recover_point:
+        pop rdi
+        pop rbx
         pop rax
-        ; we are done
         ret
+
+kthread_yield_end: equ kthread_yield.recover_point

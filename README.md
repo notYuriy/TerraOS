@@ -21,6 +21,7 @@ Completed:
 * Threading
 
 Not completed:
+* Queue-mutexes for thread-safety (get rid of spinlocks everywhere except scheduler)
 * Filesystem
 * Userspace
 * Elf parsing/loading/executing

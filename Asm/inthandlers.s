@@ -44,21 +44,36 @@ int_handler_stub:
         push rax
         mov rax, es
         push rax
+        mov rax, ds
+        push rax
+        mov rax, gs
+        push rax
+        mov rax, fs
+        push rax
         mov rdi, rsp
         call idt_dispatcher
         pop rax
+        mov fs, rax
+        pop rax
+        mov gs, rax
+        pop rax
+        mov ds, rax
+        pop rax 
         mov es, rax
-        pop rax
-        pop rax
-        pop rax
+        pop rax ; intno
+        pop rax ; cr4
+        mov cr4, rax
+        pop rax ; cr3
         mov rbx, cr3
         cmp rax, rbx
         je .next
         mov cr3, rax
         invlpg [rax]
 .next:
-        pop rax
-        pop rax
+        pop rax ; cr2
+        mov cr2, rax
+        pop rax ; cr0
+        mov cr0, rax
         pop r15
         pop r14
         pop r13

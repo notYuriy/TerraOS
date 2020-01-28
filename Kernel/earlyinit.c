@@ -14,7 +14,7 @@
 #include <time.h>
 #include <init.h>
 #include <kybrd.h>
-#include <thread.h>
+#include <kthread.h>
 
 #define KINIT_STATUS_SUCCESSFUL_FAILURE 0
 #define KINIT_STATUS_STANDING_BY 1
@@ -122,10 +122,10 @@ void system_earlyinit(uint64_t physinfo){
     pic_init();
     system_log_status("PIC", KINIT_STATUS_STANDING_BY);
     timer_init(1000);
-    system_log_status("Timer 100Hz", KINIT_STATUS_STANDING_BY);
+    system_log_status("Timer 1000Hz", KINIT_STATUS_STANDING_BY);
     kybrd_init();
     system_log_status("PS/2 Keyboard", KINIT_STATUS_STANDING_BY);
-    thread_init_subsystem();
+    kthread_init_subsystem();
     system_log_status("Scheduler", KINIT_STATUS_STANDING_BY);
     printf("[Kernel Init] Kernel basic services initialized. Unmasking irqs.\n");
     timer_enable();

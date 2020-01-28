@@ -37,7 +37,7 @@ spinlock_trylock:
         cmpxchg qword [rdi], rbx
         jnz .locked
         pop rbx
-        mov rax, 0xFFFFFFFFFFFFFFFF
+        mov rax, 1
         ret
 .locked:
         pop rbx

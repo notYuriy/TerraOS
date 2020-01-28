@@ -195,6 +195,8 @@ start64:
         mov ss, ax
         mov ds, ax
         mov es, ax
+        mov fs, ax
+        mov gs, ax
 
         jmp start64_2
 

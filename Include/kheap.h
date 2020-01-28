@@ -34,5 +34,13 @@ void kheap_free_nonblock(void* addr);
 void* kheap_malloc_aligned(size_t size, size_t align);
 //Traverse heap
 void kheap_traverse(void);
+//Aquire heap lock for not thread safe operations
+void kheap_lock(void);
+//Try to aquire heap lock for not thread safe operations
+bool kheap_try_lock(void);
+//Unlock heap lock for not thread safe operations
+void kheap_unlock(void);
+//Free next-null terminated queue of objects (not thread safe)
+void kheap_free_list(kheap_object_header_t* list);
 
 #endif

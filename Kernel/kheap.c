@@ -6,11 +6,12 @@
 kheap_object_header_t literal_head;
 kheap_object_header_t* head;
 spinlock_t kheap_spinlock;
+_Atomic bool kheap_ready_to_merge;
 
 void kheap_init(phmeminfo_t info){
+    kheap_ready_to_merge = false;
     head = &literal_head;
     head->next = NULL;
-    head->size = 0;
     kheap_object_header_t* prev = head;
     uint64_t preserved_area_base = info.preserved_area_physical_base;
     uint64_t preserved_area_limit = info.preserved_area_physical_limit;
@@ -169,16 +170,13 @@ void* kheap_malloc(size_t size){
     return result;
 }
 
-void kheap_free_nonblock(void* addr){
-    kheap_object_header_t* obj = (kheap_object_header_t*)(addr) - 1;
-    obj->next = head->next;
-    head->next = obj;
-}
-
 void kheap_free(void* addr){
-    spinlock_lock(&kheap_spinlock);
-    kheap_free_nonblock(addr);
-    spinlock_unlock(&kheap_spinlock);
+    kheap_object_header_t* obj = kheap_get_header(addr);
+    kheap_object_header_t* expected_next;
+    do {
+       expected_next = atomic_load(&(head->next));
+       obj->next = expected_next;
+    } while (!atomic_compare_exchange_strong(&(head->next), &expected_next, obj));
 }
 
 void* kheap_search_aligned_free_blocks(size_t size, size_t align){

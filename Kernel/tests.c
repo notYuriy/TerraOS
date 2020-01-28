@@ -14,7 +14,7 @@
 #include <time.h>
 #include <kybrd.h>
 #include <tty.h>
-#include <thread.h>
+#include <kthread.h>
 
 void report_test_result(bool success){
     video_packed_color_t color = video_get_packed_color();
@@ -91,37 +91,35 @@ bool getline_test(){
     printf("Login: ");
     char buf[10000];
     getline(buf, 10000);
-    printf("\nhello, %s\n", buf);
+    printf("hello, %s\n", buf);
     return true;
 }
 
 _Atomic size_t col = 2;
 _Atomic size_t returned = 100;
-_Atomic size_t thread_id = 0;
+_Atomic size_t kthread_id = 0;
 
 void printer(){
     size_t mycol = (col++) % 14 + 2;
-    size_t mythreadid = thread_id++;
-    for(size_t i = 0; i < 5; ++i){
+    size_t mythreadid = kthread_id++;
+    for(int i = 0; i < 5; ++i){
         video_set_foreground(mycol);
         printf("Hi! I am thread %llu, using color %llu\n", mythreadid, mycol);
         time_sleep(1000);
     }
+    video_set_foreground(mycol);
+    printf("Thread %llu is terminating...\n", mythreadid);
     returned--;
 }
 
 bool multitasking_test(void){
+    returned = 100;
     for(size_t i = 0; i < 100; ++i){
-        thread_summon(printer, 0);
+        kthread_summon(printer, 0);
+    }
+    while(atomic_load(&returned) > 0){
         time_sleep(100);
     }
-    printf("Summoning finished\n");
-    while(returned != 0){
-        printf("Waiting for threads\n");
-        time_sleep(10000);
-    }
-    col = 2;
-    returned = 100;
     return true;
 }
 

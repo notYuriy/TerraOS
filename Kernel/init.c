@@ -15,7 +15,7 @@
 #include <kybrd.h>
 #include <tty.h>
 #include <tests.h>
-#include <thread.h>
+#include <kthread.h>
 
 #define RUN_SHELL 1
 
