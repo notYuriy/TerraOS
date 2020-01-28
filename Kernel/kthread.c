@@ -1,12 +1,13 @@
 #include <kthread.h>
 #include <timer.h>
 #include <idt.h>
-#include <fstate.h>
 #include <spinlock.h>
 #include <kslub.h>
 #include <vmcore.h>
 #include <stdatomic.h>
 #include <portio.h>
+
+bool kthread_initialized_subsystem = false;
 
 //defined in asmutils
 void kthread_call_stub(kthread_entry_point_t entry);
@@ -18,21 +19,11 @@ uint64_t asmutils_get_p4_table(void);
 uint64_t asmutils_get_rflags(void);
 _Atomic uint64_t process_count;
 spinlock_t yield_spinlock;
-typedef struct ktask_state_struct ktask_state_t;
 
-typedef struct ktask_state_struct {
-    ext_regs_t regs;
-    idt_stack_frame_t frame;
-    ktask_state_t *next;
-    ktask_state_t *prev;
-    uint64_t id;
-    char* stack_base;
-} __attribute__((packed)) ktask_state_t;
-
-ktask_state_t* kthread_current;
+kthread_t* kthread_current;
 
 kaslub_t tasks_stub;
-ktask_state_t stub;
+kthread_t stub;
 
 void kthread_copy_frame_to_state(idt_stack_frame_t* frame){
     memcpy(&(kthread_current->frame), frame, sizeof(*frame));
@@ -44,8 +35,8 @@ void kthread_copy_state_to_frame(idt_stack_frame_t* frame){
     //asmutils_load_ext_regs(kthread_current->regs);
 }
 
-void kthread_summon(kthread_entry_point_t main, size_t stack_size){
-    ktask_state_t* new_task = kaslub_new(&tasks_stub);
+kthread_t* kthread_summon(kthread_entry_point_t main, size_t stack_size){
+    kthread_t* new_task = kaslub_new(&tasks_stub);
     size_t stack_pages_size = ((stack_size + 4095)/4096) + 1;
     char* stack_base = (char*)kheap_malloc_aligned(4096 * stack_pages_size, 4096);
     char* stack_top = stack_base + (stack_pages_size * 4096);
@@ -72,12 +63,13 @@ void kthread_summon(kthread_entry_point_t main, size_t stack_size){
     new_task->next->prev = new_task;
     spinlock_unlock(&yield_spinlock);
     kthread_yield();
+    return new_task;
 }
 
 void kthread_exit(void){
     spinlock_lock(&yield_spinlock);
-    ktask_state_t* next = kthread_current->next;
-    ktask_state_t* prev = kthread_current->prev;
+    kthread_t* next = kthread_current->next;
+    kthread_t* prev = kthread_current->prev;
     prev->next = next;
     next->prev = prev;
     kheap_free(kthread_current->stack_base);
@@ -107,7 +99,7 @@ void kthread_yield_using_frame(idt_stack_frame_t* frame){
     //
     //}
     if(spinlock_trylock(&yield_spinlock)){
-        ktask_state_t* next = kthread_current->next;
+        kthread_t* next = kthread_current->next;
         kthread_copy_frame_to_state(frame);
         kthread_current = next;
         kthread_copy_state_to_frame(frame);
@@ -123,12 +115,17 @@ void kthread_scheduler_isr(
 
 void kthread_init_subsystem(void){
     yield_spinlock = 1;
-    kaslub_init(&tasks_stub, sizeof(ktask_state_t), 64);
+    kaslub_init(&tasks_stub, sizeof(kthread_t), 64);
     timer_set_callback(kthread_scheduler_isr);
     kthread_current = kaslub_new(&tasks_stub);
     memset(kthread_current->regs, sizeof(kthread_current->regs), 0);
     memset((void*)&(kthread_current->frame), sizeof(kthread_current->frame), 0);
     kthread_current->next = kthread_current;
     kthread_current->prev = kthread_current;
+    kthread_initialized_subsystem = true;
     yield_spinlock = 0;
+}
+
+bool kthread_is_initialized(){
+    return kthread_initialized_subsystem;
 }

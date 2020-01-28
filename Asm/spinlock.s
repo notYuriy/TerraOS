@@ -1,19 +1,22 @@
 bits 64
 
-global spinlock_lock
+global spinlock_lock_yield
 global spinlock_unlock
 global spinlock_trylock
+extern kthread_yield
 
-spinlock_lock:
-        ;rdi - spinlock addr
+spinlock_lock_yield:
         push rax
         push rbx
 .wait:
         mov rax, 0
         mov rbx, 1
         cmpxchg qword [rdi], rbx
+        jz .done
         pause
-        jnz .wait
+        call kthread_yield
+        jmp .wait
+.done:
         pop rbx
         pop rax
         ret
