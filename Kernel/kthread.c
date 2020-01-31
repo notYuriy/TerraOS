@@ -23,6 +23,7 @@ spinlock_t yield_spinlock;
 kthread_t* kthread_current;
 
 kaslub_t tasks_stub;
+kslub_t msg_stub;
 kthread_t stub;
 
 void kthread_copy_frame_to_state(idt_stack_frame_t* frame){
@@ -66,16 +67,21 @@ kthread_t* kthread_summon(kthread_entry_point_t main, size_t stack_size){
     return new_task;
 }
 
-void kthread_exit(void){
+void kthread_kill_thread(kthread_t* thread){
     spinlock_lock(&yield_spinlock);
-    kthread_t* next = kthread_current->next;
-    kthread_t* prev = kthread_current->prev;
+    kthread_t* next = thread->next;
+    kthread_t* prev = thread->prev;
     prev->next = next;
     next->prev = prev;
-    kheap_free(kthread_current->stack_base);
-    kaslub_delete(&tasks_stub, kthread_current);
+    thread->id = 0;
+    kheap_free(thread->stack_base);
+    kaslub_delete(&tasks_stub, thread);
     spinlock_unlock(&yield_spinlock);
     kthread_yield();
+}
+
+void kthread_exit(void){
+    kthread_kill_thread(kthread_current);
 }
 
 bool rip_in_yield_method(uint64_t rip){
@@ -115,7 +121,10 @@ void kthread_scheduler_isr(
 
 void kthread_init_subsystem(void){
     yield_spinlock = 1;
+    process_count = 1; //0 will stand for deallocated
+    //alignment for fxsave operation is 64
     kaslub_init(&tasks_stub, sizeof(kthread_t), 64);
+    kslub_init(&msg_stub, sizeof(msg_stub));
     timer_set_callback(kthread_scheduler_isr);
     kthread_current = kaslub_new(&tasks_stub);
     memset(kthread_current->regs, sizeof(kthread_current->regs), 0);
@@ -128,4 +137,8 @@ void kthread_init_subsystem(void){
 
 bool kthread_is_initialized(){
     return kthread_initialized_subsystem;
+}
+
+uint64_t kthread_get_id(){
+    return kthread_current->id;
 }

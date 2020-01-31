@@ -12,6 +12,7 @@ void kheap_init(phmeminfo_t info){
     kheap_ready_to_merge = false;
     head = &literal_head;
     head->next = NULL;
+    head->free = false;
     kheap_object_header_t* prev = head;
     uint64_t preserved_area_base = info.preserved_area_physical_base;
     uint64_t preserved_area_limit = info.preserved_area_physical_limit;
@@ -55,6 +56,7 @@ void kheap_init(phmeminfo_t info){
              - (uint64_t)kheap_get_data(mem);
             mem->next = NULL;
             prev->next = mem;
+            mem->free = true;
             prev = mem;
             continue;
         }
@@ -74,6 +76,7 @@ void kheap_init(phmeminfo_t info){
             prev->next = before_preserved;
             after_preserved->next = NULL;
             before_preserved->next = after_preserved;
+            after_preserved->free = true;
             prev = after_preserved;
             before_preserved->size = preserved_area_base
                 + KERNEL_MAPPING_BASE
@@ -94,6 +97,7 @@ void kheap_init(phmeminfo_t info){
             (post_preserved_header_addr + KERNEL_MAPPING_BASE);
             prev->next = after_preserved;
             after_preserved->next = NULL;
+            after_preserved->free = true;
             prev = after_preserved;
             after_preserved->size = physical_upper_bound 
                 + KERNEL_MAPPING_BASE
@@ -108,6 +112,7 @@ void kheap_init(phmeminfo_t info){
             (entry->base_addr + KERNEL_MAPPING_BASE);
             prev->next = before_preserved;
             before_preserved->next = NULL;
+            before_preserved->free = true;
             prev = before_preserved;
             before_preserved->size = preserved_area_base
                 + KERNEL_MAPPING_BASE
@@ -128,6 +133,7 @@ void* kheap_sbrk_malloc(uint64_t size){
     void* allocated = ksbrk(real_size);
     kheap_object_header_t* allocated_header = allocated;
     allocated_header->size = size;
+    allocated_header->free = false;
     return kheap_get_data(allocated_header);
 }
 
@@ -143,13 +149,15 @@ void* kheap_search_free_blocks(size_t size){
             new_node->size = current->size - split_size;
             current->next = NULL;
             current->size = size;
+            current->free = false;
             prev->next = new_node;
-            return (void*)(current + 1);
+            return kheap_get_data(current);
         }
         if(current->size >= size){
             prev->next = current->next;
             current->next = NULL;
-            return (void*)(current + 1);
+            current->free = false;
+            return kheap_get_data(current);
         }
         prev = prev->next;
     }
@@ -162,7 +170,6 @@ void* kheap_malloc(size_t size){
     void* result = kheap_search_free_blocks(size);
     if(result == NULL){
         result = kheap_sbrk_malloc(size);
-        
         spinlock_unlock(&kheap_spinlock);
         return result;
     }
@@ -172,6 +179,7 @@ void* kheap_malloc(size_t size){
 
 void kheap_free(void* addr){
     kheap_object_header_t* obj = kheap_get_header(addr);
+    obj->free = true;
     kheap_object_header_t* expected_next;
     do {
        expected_next = atomic_load(&(head->next));
@@ -204,6 +212,7 @@ void* kheap_search_aligned_free_blocks(size_t size, size_t align){
                 after->size = space_after_pages - sizeof(kheap_object_header_t);
             }
             prev->next = cur->next;
+            cur->free = false;
             return kheap_get_data(cur);
         }
         if(space_before_align >= sizeof(kheap_object_header_t)){
@@ -220,6 +229,7 @@ void* kheap_search_aligned_free_blocks(size_t size, size_t align){
                 after->size = space_after_pages - sizeof(kheap_object_header_t);
             }
             prev->next = cur->next;
+            allocated->free = false;
             return kheap_get_data(allocated);
         }
         uint64_t new_pages_base = pages_base + align;
@@ -238,6 +248,7 @@ void* kheap_search_aligned_free_blocks(size_t size, size_t align){
                 after->size = new_space_after_pages - sizeof(kheap_object_header_t);
             }
             prev->next = cur->next;
+            allocated->free = false;
             return kheap_get_data(allocated);
         }
         //leaking memory is not acceptable, so we move to next variant

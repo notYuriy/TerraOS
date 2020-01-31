@@ -10,6 +10,7 @@ typedef struct kheap_object_header_struct kheap_object_header_t;
 typedef struct kheap_object_header_struct {
         kheap_object_header_t* next;
         size_t size;
+        bool free;
 } kheap_object_header_t;
 
 //get data location from header location
@@ -42,5 +43,9 @@ bool kheap_try_lock(void);
 void kheap_unlock(void);
 //Free next-null terminated queue of objects (not thread safe)
 void kheap_free_list(kheap_object_header_t* list);
+//This is used for object in stubs
+inline bool kheap_in_use(void* obj){
+    return kheap_get_header(obj)->free;
+}
 
 #endif
