@@ -1,6 +1,12 @@
 #include <utils.h>
 #include <video.h>
 
+void memset(char* begin, uint64_t count, char val){
+    for(uint64_t i = 0; i < count; ++i){
+        begin[i] = val;
+    }
+}
+
 size_t strlen(char* str){
     size_t result = 0;
     for(;str[result] != '\0'; ++result);

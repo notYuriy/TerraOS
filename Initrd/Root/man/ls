@@ -1,0 +1,11 @@
+LS(1)
+
+NAME
+    ls - list directory contents
+
+SYNOPSIS
+    ls [file]
+
+DESCRIPTION
+    Prints directory contents. If [file] is not specified, contents of the current directory will be printed.
+    Entries are printed in random order.

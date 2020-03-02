@@ -1,0 +1,10 @@
+KERNELMEM(1)
+
+NAME
+    kernelmem - print kernel heap free areas
+
+SYNOPSIS
+    kernelmem
+
+DESCRIPTION
+    Prints all kernel heap free areas in random order. Can be used for kernel debugging.

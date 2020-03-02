@@ -15,6 +15,7 @@
 #include <kybrd.h>
 #include <tty.h>
 #include <kthread.h>
+#include <ramdiskfs.h>
 
 void report_test_result(bool success){
     video_packed_color_t color = video_get_packed_color();
@@ -53,6 +54,7 @@ bool timer_test(){
 }
 
 bool splitter_test(){
+    printf("Splitter test\n");
     char* paths[] = {
         "kek",
         ".",
@@ -95,6 +97,32 @@ bool getline_test(){
     return true;
 }
 
+bool cmd_split_test(){
+    char* cmds[] = {
+        "",
+        "test",
+        "test test",
+        "d f f",
+        "d f f  a",
+        "d \t e f",
+        " d e f f",
+        " dsfsf df e  f",
+        "\"kek\"\"lol\"",
+        " \"lel\" \"lel\" ",
+        "lel \"lol kek\" \"cheburek\"",
+        "k\"k"
+    };
+    for(size_t i = 0; i < ARRSIZE(cmds); ++i){
+        printf("cmd: \"%s\" args count: %d\n", cmds[i], get_args_count(cmds[i]));
+        cmd_args_t args = split_to_args(cmds[i]);
+        for(size_t i = 0; i < (size_t)args.argc; ++i){
+            printf("\t%s\n", args.argv[i]);
+        }
+        time_sleep(1000);
+    }
+    return true;
+}
+
 _Atomic size_t col = 2;
 _Atomic size_t returned = 100;
 _Atomic size_t kthread_id = 0;
@@ -123,13 +151,25 @@ bool multitasking_test(void){
     return true;
 }
 
+bool ramdisk_test(void){
+    printf("Files in root directory\n");
+    void* root = ramdisk_opendir("/");
+    ramdisk_dirent_t buf;
+    while(ramdisk_readdir(root, &buf, 1)){
+        printf("%s\n", buf.file_name);
+    }
+    return true;
+}
+
 bool (*test_suites[])() = { 
+    cmd_split_test,
     kheap_test,
     idt_test,
     timer_test,
     splitter_test,
     getline_test,
-    multitasking_test
+    multitasking_test,
+    ramdisk_test
 };
 
 void tests_run_list(bool (**tests)(void), size_t count){

@@ -1,0 +1,10 @@
+LICENSE(1)
+
+NAME
+    license
+
+SYNOPSIS
+    license
+
+DESCRIPTION
+    Prints operating system license. Currently, TerraOS is licensed under MIT license.

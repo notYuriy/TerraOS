@@ -15,7 +15,6 @@ void* kslub_new(kslub_t* stub){
         }
     } while(!atomic_compare_exchange_strong(&(stub->head), &expected, expected->next));
     void* result = kheap_get_data(expected);
-    stub->head = stub->head->next;
     return result;
 }
 

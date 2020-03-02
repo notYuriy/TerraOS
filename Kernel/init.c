@@ -16,21 +16,39 @@
 #include <tty.h>
 #include <tests.h>
 #include <kthread.h>
+#include <ramdiskfs.h>
+#include <shellbuiltins.h>
+#include <shell.h>
 
-#define RUN_SHELL 1
+#define RUN_SHELL 0
 
 void system_init(void){
     video_set_foreground(light_grey);
     printf("Terra OS. 64 bit operating system project\n");
     printf("Copyright @notYuriy. Project is licensed under MIT license\n");
-#if RUN_SHELL == 1
+    void* current_dir = ramdisk_opendir("/");
+    shellbuiltins_init(current_dir);
+    char buf[160]; memset(buf, 160, '\0');
     while(true){
         video_set_foreground(light_green);
         printf("$");
         video_set_foreground(light_brown);
         printf("root> ");
         video_set_foreground(white);
+        size_t size = getline(buf, ARRSIZE(buf));
+        video_set_foreground(light_grey);
+        shell_run_cmd(buf);
+        memset(buf, size, '\0');
+    }
+#if RUN_SHELL == 1
+    void* current_dir = ramdisk_opendir("/");
+    while(true){
         char buf[160];
+        video_set_foreground(light_green);
+        printf("$");
+        video_set_foreground(light_brown);
+        printf("root> ");
+        video_set_foreground(white);
         size_t size = getline(buf, ARRSIZE(buf));
         video_set_foreground(light_grey);
         if(strcmp(buf, "version") == 0){
@@ -44,6 +62,10 @@ void system_init(void){
             printf("kernelmem - show kernel memory usage statistics\n");
             printf("license - print license\n");
             printf("tests - run test suites\n");
+            printf("cd - change directory\n");
+            printf("ls - list files in a directory\n");
+            printf("cat - show text file contents\n");
+            printf("echo - print the message\n");
             goto cleanup;
         }
         if(strcmp(buf, "cls") == 0){
@@ -63,29 +85,57 @@ void system_init(void){
             goto cleanup;
         }
         if(strcmp(buf, "license") == 0){
-            printf(
-                "MIT License\n"
-                "\n"
-                "Copyright (c) 2020 Yuriy Zamyatin\n"
-                "\n"
-                "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
-                "of this software and associated documentation files (the \"Software\"), to deal\n"
-                "in the Software without restriction, including without limitation the rights\n"
-                "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n"
-                "copies of the Software, and to permit persons to whom the Software is\n"
-                "furnished to do so, subject to the following conditions:\n"
-                "\n"
-                "The above copyright notice and this permission notice shall be included in all\n"
-                "copies or substantial portions of the Software.\n"
-                "\n"
-                "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
-                "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
-                "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n"
-                "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
-                "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
-                "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n"
-                "SOFTWARE.\n"
-            );
+            memcpy(buf, "cat /LICENSE", 12);
+        }
+        if(strcmp(buf, "ls") == 0){
+            void* dir = ramdisk_opendirat(current_dir, "");
+            ramdisk_dirent_t dirent;
+            while(ramdisk_readdir(dir, &dirent, 1)){
+                if(dirent.file_type == FT_REGULAR){
+                    printf("\'%s\'\n", dirent.file_name);
+                }else{
+                    printf(" %s \n", dirent.file_name);
+                }
+            }
+            ramdisk_closedir(dir);
+            goto cleanup;
+        }
+        int pos = -1;
+        if((pos = cmdeq(buf, "cd")) != -1){
+            char* arg = buf + pos;
+            void* newdir = ramdisk_opendirat(current_dir, arg);
+            if(newdir == NULL){
+                printf("cd: %s: No such file or directory\n", arg);
+                goto cleanup;
+            }
+            ramdisk_closedir(current_dir);
+            current_dir = newdir;
+            goto cleanup;
+        }
+        if((pos = cmdeq(buf, "cat")) != -1){
+            char* arg = buf + pos;
+            void* file = ramdisk_openat(current_dir, arg);
+            if(file == NULL){
+                printf("cat: %s: No such file or directory\n", arg);
+            }
+            char contents_buf[256];
+            memset(contents_buf, 256, '\0');
+            size_t read = 0;
+            bool place_whitespace = false;
+            while((read = ramdisk_read(file, 256, contents_buf)) != 0){
+                printf("%s", contents_buf);
+                memset(contents_buf, read, '\0');
+                place_whitespace = true;
+            }
+            ramdisk_close(file);
+            if(place_whitespace){
+                printf("\n");
+            }
+            goto cleanup;
+        }
+        if((pos = cmdeq(buf, "echo")) != -1){
+            char* arg = buf + pos;
+            printf("%s\n", arg);
             goto cleanup;
         }
         printf("Unknown command\n");

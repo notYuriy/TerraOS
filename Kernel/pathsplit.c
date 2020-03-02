@@ -12,6 +12,9 @@ void splitter_init(void){
 //return null terminated array of given string
 // /dev/zero
 splitted_path_node_t* splitter_split_path(char* path){
+    if(path == 0){
+        
+    }
     size_t len = strlen(path);
     char* path_copy = kheap_malloc(len + 1);
     path_copy[len] = '\0';

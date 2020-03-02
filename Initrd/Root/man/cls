@@ -1,0 +1,11 @@
+CLS(1)
+
+NAME
+    cls - clear videobuffer
+
+SYNOPSIS
+    cls
+
+DESCRIPTION
+    Clear all videobuffer contents. Can be used if terminal is overwhelmed.
+    "clear" command also can be used for the same purpose.

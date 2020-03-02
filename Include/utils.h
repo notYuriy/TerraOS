@@ -13,6 +13,7 @@
 #define KERNEL_INITIAL_MAPPING_SIZE 64 MB
 #define KERNEL_INITIAL_MAPPING_END (KERNEL_INITIAL_MAPPING_SIZE + KERNEL_MAPPING_BASE)
 #define ARRSIZE(arr) (sizeof(arr)/sizeof(*arr))
+#define UNUSED __attribute__((unused))
 
 typedef int64_t ssize_t;
 
@@ -32,12 +33,7 @@ inline void longmemset(uint64_t* begin, uint64_t count, uint64_t val){
     }
 }
 
-inline void memset(char* begin, uint64_t count, char val){
-    for(uint64_t i = 0; i < count; ++i){
-        begin[i] = val;
-    }
-}
-
+void memset(char* begin, uint64_t count, char val);
 void memcpy(void* dst, void* src, size_t count);
 int strcmp(char* str1, char* str2);
 

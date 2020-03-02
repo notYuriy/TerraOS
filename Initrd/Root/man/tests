@@ -1,0 +1,10 @@
+TESTS(1)
+
+NAME
+    tests
+
+SYNOPSIS
+    tests
+
+DESCRIPTION
+    Runs unit tests on critical kernel functions. Used for kernel testing and debugging.

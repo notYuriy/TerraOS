@@ -1,0 +1,11 @@
+VERSION(1)
+
+NAME
+    version - prints current operating system version
+
+SYNOPSIS
+    version
+
+DESCRIPTION
+    Prints current kernel version. Kernel version is stored
+    in source code and updated on every compilation.

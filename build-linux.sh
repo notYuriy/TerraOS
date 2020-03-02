@@ -15,21 +15,10 @@ do
 done
 # linking everything together
 ld -n -o Obj/kernel.bin -T Ld/linker.ld Obj/*
-# moving os sources to init ramdisk
-rm -rf Initrd
-mkdir Initrd
-#mkdir Initrd/Src
-#cp -r Asm Initrd/Src/Asm
-#cp -r Lib Initrd/Src/Lib
-#cp -r Kernel Initrd/Src/Kernel
-#cp -r Boot Initrd/Src/Boot
-#cp -r Grub Initrd/Src/Grub
-#cp build.sh Initrd/Src/build.sh
-#cp test.sh Initrd/Src/build.sh
 # compressing init ramdisk to tar file
-rm -rf Tar
-mkdir Tar
-tar -cf Tar/initrd.tar Initrd --format=v7
+rm -rf Disk
+mkdir Disk
+./ramdisk-util Initrd Disk/initrd.img
 # creating grub boot fs
 rm -rf IsoTree
 mkdir IsoTree
@@ -38,7 +27,7 @@ mkdir IsoTree/boot/grub
 # copy kernel, grub config and initrd to boot fs
 cp Grub/grub.cfg IsoTree/boot/grub/grub.cfg
 cp Obj/kernel.bin IsoTree/boot/kernel.bin
-cp Tar/initrd.tar IsoTree/fs.initrd
+cp Disk/initrd.img IsoTree/initrd.img
 rm -rf Iso
 mkdir Iso
 # creating iso file

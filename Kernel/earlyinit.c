@@ -15,6 +15,7 @@
 #include <init.h>
 #include <kybrd.h>
 #include <kthread.h>
+#include <ramdiskfs.h>
 
 #define KINIT_STATUS_SUCCESSFUL_FAILURE 0
 #define KINIT_STATUS_STANDING_BY 1
@@ -127,6 +128,8 @@ void system_earlyinit(uint64_t physinfo){
     system_log_status("PS/2 Keyboard", KINIT_STATUS_STANDING_BY);
     kthread_init_subsystem();
     system_log_status("Scheduler", KINIT_STATUS_STANDING_BY);
+    ramdisk_init((void*)(ramdisk_begin + KERNEL_MAPPING_BASE));
+    system_log_status("Ramdisk", KINIT_STATUS_STANDING_BY);
     printf("[Kernel Init] Kernel basic services initialized. Unmasking irqs.\n");
     timer_enable();
     kybrd_enable();
