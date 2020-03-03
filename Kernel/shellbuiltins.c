@@ -6,9 +6,11 @@
 #include <tests.h>
 
 void* shellbuiltins_current_dir;
+color_theme_t* shellbuiltins_theme;
 
-void shellbuiltins_init(void* root){
+void shellbuiltins_init(void* root, color_theme_t* theme_ref){
     shellbuiltins_current_dir = root;
+    shellbuiltins_theme = theme_ref;
 }
 
 void shellbuiltins_version(int argc, char** argv){
@@ -110,6 +112,12 @@ void shellbuiltins_ls(int argc, char** argv){
     }else{
         dir = ramdisk_opendirat(shellbuiltins_current_dir, argv[1]); 
     }
+    if(dir == NULL){
+        if(argc != 1){
+            printf("ls: %s: No such file or directory\n", argv[1]);
+        }
+        return;
+    }
     ramdisk_dirent_t dirent;
     while(ramdisk_readdir(dir, &dirent, 1)){
         if(dirent.file_type == FT_REGULAR){
@@ -153,7 +161,7 @@ void shellbuiltins_cat(int argc, char** argv){
         printf("usage: cat <name>. Prints file contents\n");
         return;
     }
-    void* file = ramdisk_open(argv[1]);
+    void* file = ramdisk_openat(shellbuiltins_current_dir, argv[1]);
     if(file == NULL){
         printf("cat: %s: No such file or directory\n", argv[1]);
         return;
@@ -167,4 +175,78 @@ void shellbuiltins_echo(int argc, char** argv){
         printf("%s ", argv[i]);
     }
     printf("\n");
+}
+
+char* color_names[] = {
+    "black",
+    "blue",
+    "green",
+    "cyan",
+    "red",
+    "magenta",
+    "brown",
+    "light_grey",
+    "dark_grey",
+    "light_blue",
+    "light_green",
+    "light_cyan",
+    "light_red",
+    "light_magenta",
+    "light_brown",
+    "white"
+};
+
+void shellbuiltins_setcolor(int argc, char** argv){
+    if(argc != 3){
+        goto help;
+    }
+    size_t param_type = 0;
+    if(strcmp(argv[1], "background") == 0){
+        param_type = 1;
+    }
+    if(strcmp(argv[1], "foreground") == 0){
+        param_type = 2;
+    }
+    if(strcmp(argv[1], "cmd") == 0){
+        param_type = 3;
+    }
+    if(strcmp(argv[1], "user") == 0){
+        param_type = 4;
+    }
+    if(strcmp(argv[1], "$") == 0){
+        param_type = 5;
+    }
+    if(param_type == 0){
+        goto help;
+    }
+    for(size_t i = 0; i < ARRSIZE(color_names); ++i){
+        if(strcmp(color_names[i], argv[2]) == 0){
+            switch(param_type){
+                case 1:
+                    shellbuiltins_theme->background_color = i;
+                    video_set_background(i);
+                    break;
+                case 2:
+                    shellbuiltins_theme->foreground_color = i;
+                    break;
+                case 3:
+                    shellbuiltins_theme->cmd_color = i;
+                    break;
+                case 4:
+                    shellbuiltins_theme->user_color = i;
+                    break;
+                case 5:
+                    shellbuiltins_theme->path_sep_color = i;
+                    break;
+            }
+            video_clear_screen();
+            return;
+        }
+    }
+help:
+    printf("usage: setcolor <param> <color>. Available colors:\n");
+    for(size_t i = 0; i < ARRSIZE(color_names); ++i){
+        printf("%s\n", color_names[i]);
+    }
+    printf("Params: background, foreground, cmd, user, $\n");
 }

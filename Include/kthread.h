@@ -25,6 +25,7 @@ void kthread_init_subsystem(void);
 void kthread_sleep(size_t ms);
 void kthread_yield(void);
 kthread_t* kthread_summon(kthread_entry_point_t main, size_t stack_size);
+kthread_t* kthread_summon_preallocated(kthread_t* thread);
 void kthread_exit(void);
 bool kthread_is_initialized();
 uint64_t kthread_get_id();

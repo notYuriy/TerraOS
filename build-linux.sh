@@ -15,10 +15,20 @@ do
 done
 # linking everything together
 ld -n -o Obj/kernel.bin -T Ld/linker.ld Obj/*
-# compressing init ramdisk to tar file
+# creating copy of the source
+cp -r Initrd TmpInitrd
+mkdir TmpInitrd/Root/src
+cp -r Kernel TmpInitrd/Root/src/Kernel
+cp -r Asm TmpInitrd/Root/src/Asm
+cp -r Include TmpInitrd/Root/src/Include
+cp -r Ld TmpInitrd/Root/src/Ld
+cp -r Boot TmpInitrd/Root/src/Boot
+# creating ramdisk
 rm -rf Disk
 mkdir Disk
-./ramdisk-util Initrd Disk/initrd.img
+g++ -o ramdisk-util ramdisk.cpp -lstdc++fs
+./ramdisk-util TmpInitrd Disk/initrd.img
+rm -rf TmpInitrd
 # creating grub boot fs
 rm -rf IsoTree
 mkdir IsoTree

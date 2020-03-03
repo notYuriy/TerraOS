@@ -1,0 +1,12 @@
+CD(1)
+
+NAME
+    cd - change current directory
+
+SYNOPSIS
+    cd <directory>
+
+DESCRIPTION
+    Changes current directory.
+    Current directory - directory, which is an origin for relative paths.
+    Default current directory - root

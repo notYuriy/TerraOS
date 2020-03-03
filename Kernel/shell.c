@@ -15,7 +15,8 @@ char* builtins_names[] = {
     "ls",
     "cd",
     "cat",
-    "echo"
+    "echo",
+    "setcolor"
 };
 
 void (*builtins_functions[])(int, char**) = {
@@ -29,7 +30,8 @@ void (*builtins_functions[])(int, char**) = {
     shellbuiltins_ls,
     shellbuiltins_cd,
     shellbuiltins_cat,
-    shellbuiltins_echo
+    shellbuiltins_echo,
+    shellbuiltins_setcolor
 };
 
 void shell_run_cmd(char* cmd){

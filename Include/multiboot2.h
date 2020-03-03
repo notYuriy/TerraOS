@@ -47,7 +47,6 @@ typedef struct boot_elf_sections_tag_struct {
 
 typedef struct boot_module_tag_struct{
     boot_tag_t base;
-    uint32_t size;
     uint32_t start;
     uint32_t end;
 } __attribute__((packed)) boot_module_tag_t;

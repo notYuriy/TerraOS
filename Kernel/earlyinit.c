@@ -87,6 +87,8 @@ void system_earlyinit(uint64_t physinfo){
         if(tag->type == BOOT_MODULE_TAG_ID){
             ramdisk_begin = boot_get_module_physical_base(tag);
             ramdisk_end = boot_get_module_physical_limit(tag);
+            printf("[Kernel Init] Ramdisk start: 0x%p\n", ramdisk_begin);
+            printf("[Kernel Init] Ramdisk end: 0x%p\n", ramdisk_end);
         }
         tag = boot_go_to_next_entry(tag);
     }
@@ -94,19 +96,21 @@ void system_earlyinit(uint64_t physinfo){
     kernel_end = up_align(kernel_end, 4096);
     multiboot_begin = down_align(multiboot_begin, 4096);
     multiboot_end = up_align(multiboot_end, 4096);
-    ramdisk_begin = down_align(ramdisk_begin, 4096);
-    ramdisk_end = up_align(ramdisk_end, 4096);
     phmeminfo_t phinfo;
     phinfo.preserved_area_physical_base = kernel_begin;
     phinfo.preserved_area_physical_limit = kernel_end;
     if(multiboot_begin < phinfo.preserved_area_physical_base){
         phinfo.preserved_area_physical_base = multiboot_begin;
     }
-    if(ramdisk_begin < phinfo.preserved_area_physical_base){
-        phinfo.preserved_area_physical_base = ramdisk_begin;
+    if(down_align(ramdisk_begin, 4096) < phinfo.preserved_area_physical_base){
+        phinfo.preserved_area_physical_base = down_align(ramdisk_begin, 4096);
     }
-    if(ramdisk_end > phinfo.preserved_area_physical_limit){
-        phinfo.preserved_area_physical_limit = ramdisk_end;
+    if(up_align(ramdisk_end, 4096) > phinfo.preserved_area_physical_limit){
+        phinfo.preserved_area_physical_limit = up_align(ramdisk_end, 4096);
+    }
+    if(ramdisk_begin == 0){
+        printf("No ramdisk found");
+        goto end;
     }
     phinfo.mmap_entries_count = memory_map_entries_count;
     phinfo.mmap_entries = entries;
@@ -134,8 +138,8 @@ void system_earlyinit(uint64_t physinfo){
     timer_enable();
     kybrd_enable();
     printf("[Kernel Init] Fully initalized. Calling system_init\n");
-    time_sleep(1000);
     video_clear_screen();
     system_init();
+end:
     while(1) asm("pause");
 }

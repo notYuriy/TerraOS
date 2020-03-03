@@ -1,0 +1,15 @@
+SETCOLOR(1)
+
+NAME
+    setcolor - change terminal colors
+
+SYNOPSIS
+    setcolor <param> <color>
+
+DESCRIPTION
+    Set color of <param> to color. Available params:
+    1) background (color of the background)
+    2) foreground (color of the foreground)
+    3) cmd (color of the cmd input line)
+    4) $ (color of the separator)
+    5) user (color of the user label)

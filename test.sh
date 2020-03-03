@@ -1,1 +1,1 @@
-qemu-system-x86_64 -cdrom Iso/TerraOS.iso -m 128M -no-reboot
+qemu-system-x86_64 -cdrom Iso/TerraOS.iso -m 2G -no-reboot

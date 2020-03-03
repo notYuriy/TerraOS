@@ -24,19 +24,25 @@
 
 void system_init(void){
     video_set_foreground(light_grey);
+    color_theme_t theme;
+    theme.background_color = black;
+    theme.foreground_color = light_grey;
+    theme.cmd_color = white;
+    theme.path_sep_color = light_green;
+    theme.user_color = light_brown;
     printf("Terra OS. 64 bit operating system project\n");
     printf("Copyright @notYuriy. Project is licensed under MIT license\n");
     void* current_dir = ramdisk_opendir("/");
-    shellbuiltins_init(current_dir);
+    shellbuiltins_init(current_dir, &theme);
     char buf[160]; memset(buf, 160, '\0');
     while(true){
-        video_set_foreground(light_green);
+        video_set_foreground(theme.path_sep_color);
         printf("$");
-        video_set_foreground(light_brown);
+        video_set_foreground(theme.user_color);
         printf("root> ");
-        video_set_foreground(white);
+        video_set_foreground(theme.cmd_color);
         size_t size = getline(buf, ARRSIZE(buf));
-        video_set_foreground(light_grey);
+        video_set_foreground(theme.foreground_color);
         shell_run_cmd(buf);
         memset(buf, size, '\0');
     }

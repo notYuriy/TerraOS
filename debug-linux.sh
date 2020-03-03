@@ -18,6 +18,7 @@ ld -n -o Obj/kernel.bin -T Ld/linker.ld Obj/*
 # compressing init ramdisk to tar file
 rm -rf Disk
 mkdir Disk
+g++ -o ramdisk-util ramdisk.cpp -lstdc++fs
 ./ramdisk-util Initrd Disk/initrd.img
 # creating grub boot fs
 rm -rf IsoTree

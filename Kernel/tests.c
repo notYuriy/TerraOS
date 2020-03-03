@@ -175,11 +175,9 @@ bool (*test_suites[])() = {
 void tests_run_list(bool (**tests)(void), size_t count){
     printf("Running test suites\n");
     for(size_t i = 0; i < count; ++i){
-        printf("Running test %llu\n", i);
-        video_set_foreground(light_grey);
+        printf("Running test %llu\n\n", i);
         bool result = tests[i]();
-        video_set_foreground(white);
-        printf("Test result: ");
+        printf("\nTest result: ");
         report_test_result(result);
         video_putc('\n');
         if(!result){
